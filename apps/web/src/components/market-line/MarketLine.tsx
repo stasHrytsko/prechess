@@ -39,13 +39,13 @@ export function MarketLine({ history }: Props) {
       <svg className="spark" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
         <defs>
           <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#34d399" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#34d399" stopOpacity="0" />
+            <stop offset="0%" stopColor="#ee5102" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="#ee5102" stopOpacity="0" />
           </linearGradient>
         </defs>
-        <line x1="0" y1={H / 2} x2={W} y2={H / 2} stroke="#262b3d" strokeDasharray="4 6" />
+        <line x1="0" y1={H / 2} x2={W} y2={H / 2} stroke="rgba(26,23,20,0.18)" strokeDasharray="4 6" />
         <path d={area} fill="url(#fill)" />
-        <path d={path} fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinejoin="round" />
+        <path d={path} fill="none" stroke="#cc3d08" strokeWidth="2.5" strokeLinejoin="round" />
       </svg>
 
       <div className="probbar">
