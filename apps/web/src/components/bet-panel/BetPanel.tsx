@@ -1,16 +1,24 @@
 import { useState } from 'react';
 import {
   MarketSide,
+  SIDE_LABEL,
   clamp,
-  formatPct,
+  formatCents,
   impliedProb,
   payoutFor,
+  sharesFor,
 } from '../../lib/mock';
 
 interface Props {
   white: number;
   balance: number;
-  onPlace: (side: MarketSide, stake: number, entryProb: number, payout: number) => void;
+  onPlace: (
+    side: MarketSide,
+    stake: number,
+    entryProb: number,
+    shares: number,
+    payout: number,
+  ) => void;
 }
 
 const QUICK = [50, 100, 250];
@@ -20,31 +28,34 @@ export function BetPanel({ white, balance, onPlace }: Props) {
   const [stake, setStake] = useState(100);
 
   const prob = impliedProb(white, side);
-  const odds = 1 / clamp(prob, 0.02, 0.98);
+  const shares = sharesFor(stake, prob);
   const payout = payoutFor(stake, prob);
+  const profit = payout - stake;
+  const profitPct = stake > 0 ? Math.round((profit / stake) * 100) : 0;
   const valid = stake > 0 && stake <= balance;
 
   return (
     <div className="card">
-      <h2>Place a bet</h2>
+      <h2>Купить доли</h2>
 
       <div className="sides">
         <button
           className={`side-btn white ${side === 'white' ? 'sel' : ''}`}
           onClick={() => setSide('white')}
         >
-          <div className="name">White wins</div>
-          <div className="odds">{(1 / clamp(white, 0.02, 0.98)).toFixed(2)}×</div>
+          <div className="name">Белые</div>
+          <div className="odds">{formatCents(white)}</div>
         </button>
         <button
           className={`side-btn black ${side === 'black' ? 'sel' : ''}`}
           onClick={() => setSide('black')}
         >
-          <div className="name">Black wins</div>
-          <div className="odds">{(1 / clamp(1 - white, 0.02, 0.98)).toFixed(2)}×</div>
+          <div className="name">Чёрные</div>
+          <div className="odds">{formatCents(1 - white)}</div>
         </button>
       </div>
 
+      <label className="field-lbl">Сумма (очки)</label>
       <div className="stake-row">
         <input
           className="stake-input"
@@ -62,22 +73,25 @@ export function BetPanel({ white, balance, onPlace }: Props) {
           </button>
         ))}
         <button className="chip" onClick={() => setStake(balance)}>
-          Max
+          Макс
         </button>
       </div>
 
       <div className="payout">
+        <span>Цена · доли</span>
         <span>
-          Entry odds {odds.toFixed(2)}× · win chance {formatPct(prob)}
+          {formatCents(prob)} · ≈ {shares.toFixed(2)}
         </span>
       </div>
       <div className="payout">
-        <span>Potential payout</span>
-        <b>{payout} pts</b>
+        <span>К получению при выигрыше</span>
+        <b>
+          {payout} очк. <span className="gain">(+{profitPct}%)</span>
+        </b>
       </div>
 
-      <button className="place" disabled={!valid} onClick={() => onPlace(side, stake, prob, payout)}>
-        {valid ? `Bet ${stake} on ${side}` : 'Not enough points'}
+      <button className="place" disabled={!valid} onClick={() => onPlace(side, stake, prob, shares, payout)}>
+        {valid ? `Купить · ${SIDE_LABEL[side]}` : 'Недостаточно очков'}
       </button>
     </div>
   );

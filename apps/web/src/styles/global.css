@@ -476,3 +476,136 @@ body {
     transform: translate(-50%, 10px);
   }
 }
+
+/* ---------- Market question (Polymarket-style header) ---------- */
+.market-q {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.q-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.q-sub {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.outcomes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.outcome {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 0 8px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev-2);
+}
+.outcome .o-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.outcome .o-pct {
+  grid-column: 1;
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.outcome .o-price {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  align-self: center;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+.outcome.white {
+  border-color: rgba(52, 211, 153, 0.4);
+}
+.outcome.white .o-price {
+  background: var(--white-side-dim);
+  color: var(--white-side);
+}
+.outcome.black {
+  border-color: rgba(244, 114, 182, 0.4);
+}
+.outcome.black .o-price {
+  background: var(--black-side-dim);
+  color: var(--black-side);
+}
+
+.line-foot {
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+.field-lbl {
+  display: block;
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+.payout b .gain {
+  color: var(--white-side);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ---------- How it works ---------- */
+.how {
+  margin-top: 20px;
+}
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 760px) {
+  .how-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.how-step {
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+}
+.how-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 12px;
+}
+.how-step h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+.how-step p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-dim);
+}

@@ -1,4 +1,4 @@
-import { ProbPoint, formatPct } from '../../lib/mock';
+import { ProbPoint, formatCents, formatPct } from '../../lib/mock';
 
 interface Props {
   history: ProbPoint[];
@@ -24,14 +24,14 @@ export function MarketLine({ history }: Props) {
     <div className="card">
       <div className="line-head">
         <div className="prob white">
-          <span className="who">White win</span>
+          <span className="who">Белые · {formatCents(white)}</span>
           <span className="val">{formatPct(white)}</span>
         </div>
         <span className="live">
-          <span className="blip" /> Live
+          <span className="blip" /> Лайв
         </span>
         <div className="prob black">
-          <span className="who">Black win</span>
+          <span className="who">Чёрные · {formatCents(black)}</span>
           <span className="val">{formatPct(black)}</span>
         </div>
       </div>
@@ -52,6 +52,7 @@ export function MarketLine({ history }: Props) {
         <div className="w" style={{ width: `${white * 100}%` }} />
         <div className="b" style={{ width: `${black * 100}%` }} />
       </div>
+      <div className="line-foot">Шанс победы белых · обновляется в реальном времени</div>
     </div>
   );
 }

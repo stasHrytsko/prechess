@@ -4,6 +4,7 @@ import { MarketLine } from './components/market-line/MarketLine';
 import { BetPanel } from './components/bet-panel/BetPanel';
 import { ActiveBets } from './components/bet-panel/ActiveBets';
 import { Leaderboard } from './components/leaderboard/Leaderboard';
+import { HowItWorks } from './components/how-it-works/HowItWorks';
 import {
   Bet,
   INITIAL_BALANCE,
@@ -11,6 +12,8 @@ import {
   MOCK_LEADERBOARD,
   MarketSide,
   ProbPoint,
+  formatCents,
+  formatPct,
   nextProb,
 } from './lib/mock';
 
@@ -43,13 +46,19 @@ export default function App() {
     return () => window.clearInterval(id);
   }, []);
 
-  function placeBet(side: MarketSide, stake: number, entryProb: number, payout: number) {
+  function placeBet(
+    side: MarketSide,
+    stake: number,
+    entryProb: number,
+    shares: number,
+    payout: number,
+  ) {
     setBalance((b) => b - stake);
     setBets((prev) => [
-      { id: crypto.randomUUID(), side, stake, entryProb, payout, createdAt: Date.now() },
+      { id: crypto.randomUUID(), side, stake, entryProb, shares, payout, createdAt: Date.now() },
       ...prev,
     ]);
-    setToast(`Bet placed: ${stake} pts on ${side}`);
+    setToast(`Позиция открыта: ${stake} очк. на «${side === 'white' ? 'Белые' : 'Чёрные'}»`);
     window.clearTimeout(toastTimer.current);
     toastTimer.current = window.setTimeout(() => setToast(null), 2200);
   }
@@ -63,32 +72,43 @@ export default function App() {
           <span className="logo">♟️</span>
           <div>
             <h1>Prediction Chess</h1>
-            <div className="tag">Virtual points · live win-probability markets</div>
+            <div className="tag">Виртуальные очки · рынки на исход партии в реальном времени</div>
           </div>
         </div>
         <div className="balance">
-          <span className="lbl">Balance</span>
-          <span className="pts">{balance.toLocaleString()}</span>
-          <span className="lbl">pts</span>
+          <span className="lbl">Баланс</span>
+          <span className="pts">{balance.toLocaleString('ru-RU')}</span>
+          <span className="lbl">очк.</span>
         </div>
       </header>
 
       <div className="grid">
         <div className="stack">
           <div className="card">
-            <div className="match">
-              <div className="player">
-                <span className="dot white" /> {MOCK_GAME.whitePlayer}
+            <div className="market-q">
+              <div>
+                <div className="q-title">{MOCK_GAME.question}</div>
+                <div className="q-sub">
+                  {MOCK_GAME.whitePlayer} vs {MOCK_GAME.blackPlayer} · ход {MOCK_GAME.moveNumber}
+                </div>
               </div>
-              <span className="vs">move {MOCK_GAME.moveNumber}</span>
-              <div className="player">
-                {MOCK_GAME.blackPlayer} <span className="dot black" />
-              </div>
-            </div>
-            <Board fen={MOCK_GAME.fen} />
-            <div className="match" style={{ marginTop: 12, marginBottom: 0 }}>
               <span className="event">{MOCK_GAME.event}</span>
             </div>
+
+            <div className="outcomes">
+              <div className="outcome white">
+                <span className="o-name">Белые</span>
+                <span className="o-pct">{formatPct(white)}</span>
+                <span className="o-price">{formatCents(white)}</span>
+              </div>
+              <div className="outcome black">
+                <span className="o-name">Чёрные</span>
+                <span className="o-pct">{formatPct(1 - white)}</span>
+                <span className="o-price">{formatCents(1 - white)}</span>
+              </div>
+            </div>
+
+            <Board fen={MOCK_GAME.fen} />
           </div>
           <MarketLine history={history} />
         </div>
@@ -99,6 +119,8 @@ export default function App() {
           <Leaderboard rows={leaderboard} />
         </div>
       </div>
+
+      <HowItWorks />
 
       {toast && <div className="toast">{toast}</div>}
     </div>
