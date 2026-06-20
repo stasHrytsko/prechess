@@ -477,6 +477,142 @@ body {
   }
 }
 
+/* ---------- Games list (lobby / picker) ---------- */
+.games-section {
+  margin-bottom: 22px;
+}
+.games-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.games-head h2 {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin: 0;
+}
+.games-count {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+.games-row {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+}
+.game-card {
+  flex: 0 0 248px;
+  text-align: left;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+  color: var(--text);
+  transition: border-color 0.15s, transform 0.1s;
+}
+.game-card:hover {
+  border-color: var(--text-faint);
+}
+.game-card.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.gc-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.gc-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--white-side);
+}
+.gc-tag {
+  font-size: 11px;
+  color: var(--text-dim);
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+.gc-player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.gc-player .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  flex: 0 0 auto;
+}
+.gc-player .dot.white {
+  background: #f4f4f5;
+}
+.gc-player .dot.black {
+  background: #1b1b1f;
+}
+.gc-name {
+  font-size: 13px;
+  font-weight: 600;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gc-rating {
+  font-size: 12px;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+.gc-bar {
+  display: flex;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 10px 0 8px;
+  border: 1px solid var(--border);
+}
+.gc-bar .w {
+  background: var(--white-side);
+}
+.gc-bar .b {
+  background: var(--black-side);
+}
+.gc-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.gc-foot .gc-w {
+  color: var(--white-side);
+}
+.gc-foot .gc-b {
+  color: var(--black-side);
+}
+.gc-foot .gc-vol {
+  color: var(--text-faint);
+}
+.bet-game {
+  font-size: 13px;
+  font-weight: 600;
+}
+
 /* ---------- Market question (Polymarket-style header) ---------- */
 .market-q {
   display: flex;

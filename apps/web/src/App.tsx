@@ -1,50 +1,67 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Board } from './components/board/Board';
 import { MarketLine } from './components/market-line/MarketLine';
 import { BetPanel } from './components/bet-panel/BetPanel';
 import { ActiveBets } from './components/bet-panel/ActiveBets';
 import { Leaderboard } from './components/leaderboard/Leaderboard';
 import { HowItWorks } from './components/how-it-works/HowItWorks';
+import { GamesList } from './components/games-list/GamesList';
 import {
   Bet,
   INITIAL_BALANCE,
-  MOCK_GAME,
+  MARKET_QUESTION,
+  MOCK_GAMES,
   MOCK_LEADERBOARD,
   MarketSide,
   ProbPoint,
   formatCents,
   formatPct,
   nextProb,
+  seedHistory,
 } from './lib/mock';
 
+type Histories = Record<string, ProbPoint[]>;
+
 export default function App() {
-  const [history, setHistory] = useState<ProbPoint[]>(() => {
-    const now = Date.now();
-    // Seed with a short flat-ish history so the line isn't empty on load.
-    let w = 0.58;
-    return Array.from({ length: 24 }, (_, i) => {
-      w = nextProb(w);
-      return { t: now - (24 - i) * 1500, white: w };
-    });
+  const [histories, setHistories] = useState<Histories>(() => {
+    const init: Histories = {};
+    for (const g of MOCK_GAMES) init[g.id] = seedHistory(g.startWhite);
+    return init;
   });
+  const [selectedId, setSelectedId] = useState(MOCK_GAMES[0].id);
   const [balance, setBalance] = useState(INITIAL_BALANCE);
   const [bets, setBets] = useState<Bet[]>([]);
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<number>();
 
-  const white = history[history.length - 1].white;
-
-  // Live probability tick — simulates the worker pushing realtime updates.
+  // Live probability tick for every game — simulates realtime updates.
   useEffect(() => {
     const id = window.setInterval(() => {
-      setHistory((prev) => {
-        const last = prev[prev.length - 1];
-        const next: ProbPoint = { t: Date.now(), white: nextProb(last.white) };
-        return [...prev.slice(-59), next];
+      setHistories((prev) => {
+        const next: Histories = {};
+        for (const g of MOCK_GAMES) {
+          const hist = prev[g.id];
+          const last = hist[hist.length - 1];
+          next[g.id] = [...hist.slice(-59), { t: Date.now(), white: nextProb(last.white) }];
+        }
+        return next;
       });
     }, 1500);
     return () => window.clearInterval(id);
   }, []);
+
+  const probByGame = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const g of MOCK_GAMES) {
+      const hist = histories[g.id];
+      map[g.id] = hist[hist.length - 1].white;
+    }
+    return map;
+  }, [histories]);
+
+  const game = MOCK_GAMES.find((g) => g.id === selectedId) ?? MOCK_GAMES[0];
+  const history = histories[selectedId];
+  const white = history[history.length - 1].white;
 
   function placeBet(
     side: MarketSide,
@@ -55,7 +72,16 @@ export default function App() {
   ) {
     setBalance((b) => b - stake);
     setBets((prev) => [
-      { id: crypto.randomUUID(), side, stake, entryProb, shares, payout, createdAt: Date.now() },
+      {
+        id: crypto.randomUUID(),
+        gameId: selectedId,
+        side,
+        stake,
+        entryProb,
+        shares,
+        payout,
+        createdAt: Date.now(),
+      },
       ...prev,
     ]);
     setToast(`Позиция открыта: ${stake} очк. на «${side === 'white' ? 'Белые' : 'Чёрные'}»`);
@@ -82,17 +108,27 @@ export default function App() {
         </div>
       </header>
 
+      <GamesList
+        games={MOCK_GAMES}
+        probByGame={probByGame}
+        selectedId={selectedId}
+        onSelect={setSelectedId}
+      />
+
       <div className="grid">
         <div className="stack">
           <div className="card">
             <div className="market-q">
               <div>
-                <div className="q-title">{MOCK_GAME.question}</div>
+                <div className="q-title">{MARKET_QUESTION}</div>
                 <div className="q-sub">
-                  {MOCK_GAME.whitePlayer} vs {MOCK_GAME.blackPlayer} · ход {MOCK_GAME.moveNumber}
+                  {game.white.name} ({game.white.rating}) vs {game.black.name} ({game.black.rating}) ·
+                  ход {game.moveNumber}
                 </div>
               </div>
-              <span className="event">{MOCK_GAME.event}</span>
+              <span className="event">
+                {game.event} · {game.timeClass}
+              </span>
             </div>
 
             <div className="outcomes">
@@ -108,14 +144,14 @@ export default function App() {
               </div>
             </div>
 
-            <Board fen={MOCK_GAME.fen} />
+            <Board fen={game.fen} />
           </div>
           <MarketLine history={history} />
         </div>
 
         <div className="stack">
           <BetPanel white={white} balance={balance} onPlace={placeBet} />
-          <ActiveBets bets={bets} white={white} />
+          <ActiveBets bets={bets} games={MOCK_GAMES} probByGame={probByGame} />
           <Leaderboard rows={leaderboard} />
         </div>
       </div>

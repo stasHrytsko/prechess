@@ -14,6 +14,7 @@ export interface ProbPoint {
 
 export interface Bet {
   id: string;
+  gameId: string;
   side: MarketSide;
   /** Points spent */
   stake: number;
@@ -33,27 +34,85 @@ export interface LeaderRow {
   isYou?: boolean;
 }
 
-export interface MockGame {
-  id: string;
-  whitePlayer: string;
-  blackPlayer: string;
-  event: string;
-  question: string;
-  /** Starting position for the demo (mid-game, slight white edge) */
-  fen: string;
-  moveNumber: number;
+export interface Player {
+  name: string;
+  rating: number;
 }
 
-export const MOCK_GAME: MockGame = {
-  id: 'game-001',
-  whitePlayer: 'Магнус К. (2839)',
-  blackPlayer: 'Хикару Н. (2802)',
-  event: 'Lichess Titled Arena · Блиц',
-  question: 'Кто победит в партии?',
-  // Italian-game-ish middlegame position
-  fen: 'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQK2R',
-  moveNumber: 8,
-};
+export interface MockGame {
+  id: string;
+  white: Player;
+  black: Player;
+  event: string;
+  /** Блиц / Рапид / Классика */
+  timeClass: string;
+  fen: string;
+  moveNumber: number;
+  /** Starting white win probability */
+  startWhite: number;
+  /** Points traded so far (for flavor) */
+  volume: number;
+}
+
+export const MARKET_QUESTION = 'Кто победит в партии?';
+
+export const MOCK_GAMES: MockGame[] = [
+  {
+    id: 'game-001',
+    white: { name: 'Магнус Карлсен', rating: 2839 },
+    black: { name: 'Хикару Накамура', rating: 2802 },
+    event: 'Lichess Titled Arena',
+    timeClass: 'Блиц',
+    fen: 'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQK2R',
+    moveNumber: 8,
+    startWhite: 0.58,
+    volume: 48200,
+  },
+  {
+    id: 'game-002',
+    white: { name: 'Фабиано Каруана', rating: 2776 },
+    black: { name: 'Дин Лижэнь', rating: 2780 },
+    event: 'FIDE Grand Prix',
+    timeClass: 'Рапид',
+    fen: 'r2q1rk1/pp2bppp/2n1pn2/3p4/3P4/2NBPN2/PP3PPP/R1BQ1RK1',
+    moveNumber: 14,
+    startWhite: 0.47,
+    volume: 31750,
+  },
+  {
+    id: 'game-003',
+    white: { name: 'Алиреза Фируджа', rating: 2760 },
+    black: { name: 'Ян Непомнящий', rating: 2771 },
+    event: 'Speed Chess Championship',
+    timeClass: 'Блиц',
+    fen: 'rnbqkbnr/pp3ppp/4p3/2ppP3/3P4/8/PPP2PPP/RNBQKBNR',
+    moveNumber: 5,
+    startWhite: 0.52,
+    volume: 22400,
+  },
+  {
+    id: 'game-004',
+    white: { name: 'Уэсли Со', rating: 2757 },
+    black: { name: 'Аниш Гири', rating: 2745 },
+    event: 'Tata Steel Masters',
+    timeClass: 'Классика',
+    fen: '2rq1rk1/pb1nbppp/1p2pn2/8/2PP4/P1Q1PN2/1B1NBPPP/R4RK1',
+    moveNumber: 19,
+    startWhite: 0.63,
+    volume: 18900,
+  },
+  {
+    id: 'game-005',
+    white: { name: 'Нодирбек Абдусатторов', rating: 2766 },
+    black: { name: 'Р. Прагнанандха', rating: 2748 },
+    event: 'Lichess Titled Arena',
+    timeClass: 'Блиц',
+    fen: 'r1bq1rk1/ppp2ppp/2np1n2/2b1p3/2B1P3/2NP1N2/PPP2PPP/R1BQ1RK1',
+    moveNumber: 7,
+    startWhite: 0.41,
+    volume: 12650,
+  },
+];
 
 export const INITIAL_BALANCE = 1000;
 
@@ -121,6 +180,16 @@ export function nextProb(current: number): number {
   return clamp(current + drift, 0.08, 0.92);
 }
 
+/** Seed a short history around a starting probability so the line isn't empty. */
+export function seedHistory(start: number, points = 24, stepMs = 1500): ProbPoint[] {
+  const now = Date.now();
+  let w = start;
+  return Array.from({ length: points }, (_, i) => {
+    w = nextProb(w);
+    return { t: now - (points - i) * stepMs, white: w };
+  });
+}
+
 export function impliedProb(white: number, side: MarketSide): number {
   return side === 'white' ? white : 1 - white;
 }
@@ -146,4 +215,9 @@ export function formatPct(p: number): string {
 
 export function formatCents(p: number): string {
   return `${priceCents(p)}¢`;
+}
+
+export function formatVolume(v: number): string {
+  if (v >= 1000) return `${(v / 1000).toFixed(1)}K`;
+  return String(v);
 }

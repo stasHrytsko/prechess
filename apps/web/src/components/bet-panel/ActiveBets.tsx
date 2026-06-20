@@ -1,11 +1,12 @@
-import { Bet, SIDE_LABEL, formatCents, impliedProb } from '../../lib/mock';
+import { Bet, MockGame, SIDE_LABEL, formatCents, impliedProb } from '../../lib/mock';
 
 interface Props {
   bets: Bet[];
-  white: number;
+  games: MockGame[];
+  probByGame: Record<string, number>;
 }
 
-export function ActiveBets({ bets, white }: Props) {
+export function ActiveBets({ bets, games, probByGame }: Props) {
   return (
     <div className="card">
       <h2>Открытые позиции</h2>
@@ -13,6 +14,8 @@ export function ActiveBets({ bets, white }: Props) {
         <div className="empty">Пока нет позиций. Купи доли, чтобы видеть P/L в реальном времени.</div>
       )}
       {bets.map((bet) => {
+        const game = games.find((g) => g.id === bet.gameId);
+        const white = probByGame[bet.gameId] ?? bet.entryProb;
         const curProb = impliedProb(white, bet.side);
         // Mark-to-market: current value of the held shares at the live price.
         const markValue = bet.shares * curProb * 100;
@@ -23,9 +26,11 @@ export function ActiveBets({ bets, white }: Props) {
             <div className="meta">
               <span className={`pill ${bet.side}`}>{SIDE_LABEL[bet.side]}</span>
               <div>
-                <div>{bet.stake} очк.</div>
+                <div className="bet-game">
+                  {game ? `${game.white.name.split(' ')[0]} vs ${game.black.name.split(' ')[0]}` : '—'}
+                </div>
                 <div className="sub">
-                  вход {formatCents(bet.entryProb)} · сейчас {formatCents(curProb)}
+                  {bet.stake} очк. · вход {formatCents(bet.entryProb)} · сейчас {formatCents(curProb)}
                 </div>
               </div>
             </div>
