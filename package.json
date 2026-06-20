@@ -1,12 +1,16 @@
 {
   "name": "prediction-chess",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "packageManager": "pnpm@9.0.0",
   "scripts": {
-    "dev": "pnpm -r --parallel dev",
-    "build": "pnpm -r build",
-    "lint": "pnpm -r lint",
-    "typecheck": "pnpm -r typecheck",
-    "clean": "pnpm -r clean"
+    "dev": "pnpm --parallel --filter @prediction-chess/web --filter @prediction-chess/worker dev",
+    "build": "pnpm --filter @prediction-chess/shared build && pnpm --filter @prediction-chess/web build && pnpm --filter @prediction-chess/worker build",
+    "lint": "pnpm --filter @prediction-chess/shared lint && pnpm --filter @prediction-chess/web lint && pnpm --filter @prediction-chess/worker lint",
+    "typecheck": "pnpm --filter @prediction-chess/shared typecheck && pnpm --filter @prediction-chess/web typecheck && pnpm --filter @prediction-chess/worker typecheck",
+    "clean": "pnpm --filter @prediction-chess/shared clean && pnpm --filter @prediction-chess/web clean && pnpm --filter @prediction-chess/worker clean"
   }
 }

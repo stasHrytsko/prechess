@@ -1,6 +1,12 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "baseUrl": ".",
+    "ignoreDeprecations": "5.0",
+    "types": ["node"],
+    "paths": {
+      "@prediction-chess/shared": ["../../packages/shared/src/index.ts"]
+    },
     "lib": ["ES2022"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
