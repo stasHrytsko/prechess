@@ -91,7 +91,7 @@ prediction-chess/
 - `apps/web` - клиент, доска, линия, ставки, баланс, лидерборд.
 - `apps/worker` - Lichess ingest, Stockfish, расчет вероятностей, резолв рынков.
 - `packages/shared` - общие типы, шахматная логика, математические преобразования, валидация.
-- `supabase` - схема данных, RLS, RPC, realtime.
+- `supabase` - схема данных, RLS, RPC, realtime. Контракт схемы и RPC (`place_bet`, `resolve_market`) - в `docs/architecture/decisions.md` (ADR-001); миграция - `supabase/migrations/20260623120000_init_schema.sql`.
 - `docs` - продукт, архитектура, допущения, юридические риски.
 
 ## 5. Что нужно держать актуальным
