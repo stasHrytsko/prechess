@@ -235,7 +235,7 @@ resolver: first matching event in canonical move order
 
 ## 8. Начальные семейства шаблонов рынков
 
-### 8.1 FIRST_EVENT
+### 8.1 `FIRST_EVENT` — первое событие
 
 Вопрос: какое событие произойдёт первым в заданном горизонте?
 
@@ -251,7 +251,7 @@ resolver: first matching event in canonical move order
 
 Предпочтительный подход — по возможности конструировать взаимоисключающие исходы и не прятать сложный приоритет внутри резолвера.
 
-### 8.2 EVENT_WITHIN
+### 8.2 `EVENT_WITHIN` — событие в пределах горизонта
 
 Вопрос: произойдёт ли событие X в течение N полуходов?
 
@@ -259,7 +259,7 @@ resolver: first matching event in canonical move order
 > Будет ли шах в следующие 6 полуходов?  
 > Да / Нет
 
-### 8.3 PLAYER_EVENT_WITHIN
+### 8.3 `PLAYER_EVENT_WITHIN` — событие конкретного игрока
 
 Вопрос: совершит ли конкретная сторона событие X в течение своих следующих N ходов?
 
@@ -269,7 +269,7 @@ resolver: first matching event in canonical move order
 
 Здесь горизонт считается по ходам конкретной стороны, а не по общему числу полуходов.
 
-### 8.4 EVENT_BEFORE_MOVE
+### 8.4 `EVENT_BEFORE_MOVE` — событие до заданного хода
 
 Вопрос: случится ли событие X до фиксированного номера хода?
 
@@ -277,7 +277,7 @@ resolver: first matching event in canonical move order
 > Разменяют ли ферзей до 20-го хода?  
 > Да / Нет
 
-### 8.5 NEXT_ACTOR
+### 8.5 `NEXT_ACTOR` — кто совершит событие следующим
 
 Вопрос: какая сторона следующей совершит событие X?
 
@@ -285,7 +285,7 @@ resolver: first matching event in canonical move order
 > Кто сделает следующее взятие?  
 > Белые / Чёрные / Взятия не будет до конца горизонта
 
-### 8.6 NEXT_OBJECT
+### 8.6 `NEXT_OBJECT` — какой объект будет следующим
 
 Вопрос: какой объект или тип фигуры будет связан со следующим событием?
 
@@ -295,7 +295,7 @@ resolver: first matching event in canonical move order
 
 В мобильном интерфейсе нужно показывать только такие наборы исходов, которые считываются мгновенно.
 
-### 8.7 RACE
+### 8.7 `RACE` — гонка событий
 
 Вопрос: какое из нескольких событий произойдёт раньше?
 
@@ -303,7 +303,7 @@ resolver: first matching event in canonical move order
 > Что произойдёт первым?  
 > Белые рокируются / Первое взятие / Первый шах / Ничего до конца горизонта
 
-### 8.8 GAME_RESULT
+### 8.8 `GAME_RESULT` — результат партии
 
 Длинный рынок:
 > Кто победит?  
@@ -671,7 +671,7 @@ candidate
 - победивший исход;
 - отмена/возврат.
 
-Пример для FIRST_EVENT:
+Пример для `FIRST_EVENT`:
 
 ```text
 start_ply = 30
@@ -714,7 +714,7 @@ fallback = none
 
 ---
 
-## 21. Пример неоднозначности FIRST_EVENT
+## 21. Пример неоднозначности `FIRST_EVENT`
 
 Одно взятие может одновременно дать шах.
 
@@ -968,88 +968,84 @@ Stockfish может помогать выбирать подходящий ры
 
 ## 28. Основные сущности
 
-Концептуальная модель данных должна как минимум включать:
+Концептуальная модель данных должна как минимум включать следующие сущности. Технические имена сущностей и полей остаются на английском как часть кода и API, но их смысл фиксируется здесь по-русски.
 
 ### `Game` — партия
-- id
-- source
-- external_game_id
-- players
-- ratings
-- tournament/event
-- time control
-- status
-- current FEN
-- move/ply
-- PGN/move stream
-- result
+- `id` — внутренний идентификатор;
+- `source` — источник данных;
+- `external_game_id` — идентификатор партии у внешнего источника;
+- `players` — игроки;
+- `ratings` — рейтинги;
+- `tournament/event` — турнир или событие;
+- `time_control` — контроль времени;
+- `status` — состояние партии;
+- `current_fen` — текущая позиция;
+- `move/ply` — номер хода/полухода;
+- `pgn/move_stream` — запись и поток ходов;
+- `result` — результат партии.
 
 ### `MarketTemplate` — шаблон рынка
-- id
-- family
-- version
-- outcome schema
-- eligibility rule
-- resolver rule
-- horizon rule
-- void rule
+- `id` — идентификатор шаблона;
+- `family` — семейство рынка;
+- `version` — версия контракта;
+- `outcome_schema` — схема исходов;
+- `eligibility_rule` — правило применимости;
+- `resolver_rule` — правило расчёта;
+- `horizon_rule` — правило горизонта;
+- `void_rule` — правило отмены и возврата.
 
 ### `Market` — рынок
-- id
-- game_id
-- template_id/version
-- parameters
-- start_ply
-- end condition
-- status
-- created_at
-- locked_at
-- resolved_at
-- winning_outcome
-- resolver evidence
+- `id` — идентификатор;
+- `game_id` — партия;
+- `template_id/version` — шаблон и его версия;
+- `parameters` — параметры конкретного рынка;
+- `start_ply` — полуход открытия;
+- `end_condition` — условие завершения;
+- `status` — состояние рынка;
+- `created_at` — время создания;
+- `locked_at` — время блокировки торговли;
+- `resolved_at` — время определения исхода;
+- `winning_outcome` — победивший исход;
+- `resolver_evidence` — данные, по которым можно воспроизвести расчёт.
 
 ### `Outcome` — исход
-- id
-- market_id
-- key
-- label
-- current AMM state/quantity
+- `id` — идентификатор;
+- `market_id` — рынок;
+- `key` — машинный ключ исхода;
+- `label` — отображаемое название;
+- `amm_state/quantity` — состояние AMM и объём выпущенных долей.
 
 ### `Trade` — сделка
-- id
-- user_id
-- market_id
-- outcome_id
-- side: buy/sell
-- points spent/received
-- shares
-- average execution price
-- AMM state before/after
-- created_at
+- `id` — идентификатор;
+- `user_id` — пользователь;
+- `market_id` — рынок;
+- `outcome_id` — исход;
+- `side` — покупка или продажа;
+- `points` — потраченные или полученные очки;
+- `shares` — количество долей;
+- `average_execution_price` — средняя цена исполнения;
+- `amm_state_before/after` — состояние AMM до и после сделки;
+- `created_at` — время сделки.
 
 ### `Position` — позиция пользователя
-- user_id
-- market_id
-- outcome_id
-- net shares
-- cost basis
-- realized P/L
-- unrealized P/L
+- `user_id` — пользователь;
+- `market_id` — рынок;
+- `outcome_id` — исход;
+- `net_shares` — чистое количество долей;
+- `cost_basis` — себестоимость позиции;
+- `realized_pnl` — реализованный результат;
+- `unrealized_pnl` — нереализованный результат.
 
 ### `Ledger` — журнал операций
-- неизменяемая история движения очков
+Неизменяемая история всех движений виртуальных очков.
 
 ### `ChessEvent` — шахматное событие
-- game_id
-- ply
-- move
-- FEN before/after
-- derived event flags
-- source timestamp
-
-Названия технических полей фиксируются на английском как часть кода/API. Пользовательская документация и интерфейс — на русском.
-
----
+- `game_id` — партия;
+- `ply` — полуход;
+- `move` — ход;
+- `fen_before/after` — позиция до и после хода;
+- `derived_event_flags` — вычисленные флаги шахматных событий;
+- `source_timestamp` — временная метка источника.
 
 ## 29. Системный пайплайн
 
