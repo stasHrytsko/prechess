@@ -1,25 +1,25 @@
-# Data Flow
+# Поток данных
 
 ```text
-Live chess source
-  → canonical move ingestion
-  → board state + stored move
-  → deterministic chess-event detector
-      → resolve/continue existing markets
-  → template eligibility
-  → candidate market generation
-  → relevance scoring
-  → open selected markets
-  → mobile clients receive board + prices
-  → users buy/sell shares
-  → server-authoritative AMM updates prices
-  → realtime update to all viewers
-  → next move locks affected markets
-  → deterministic resolution
-  → settlement + ledger
-  → replacement market
+Источник живых шахмат
+  → получение канонического хода
+  → обновление доски + сохранение хода
+  → детектор детерминированных шахматных событий
+      → расчёт или продолжение уже открытых рынков
+  → проверка применимости шаблонов
+  → генерация кандидатов
+  → оценка актуальности
+  → открытие выбранных рынков
+  → мобильные клиенты получают доску и цены
+  → пользователи покупают/продают доли
+  → серверно-авторитетный AMM пересчитывает цены
+  → обновление для всех зрителей в реальном времени
+  → следующий ход блокирует затрагиваемые рынки
+  → детерминированный расчёт
+  → выплаты/возвраты + ledger
+  → новый рынок
 ```
 
-Market selection and market pricing are separate systems.
+Выбор того, **какой рынок показать**, и расчёт того, **какова цена его исходов**, — две разные системы.
 
-Client clocks, client chess state and LLM output are never authoritative.
+Клиентские часы, состояние доски на клиенте и вывод LLM никогда не являются источником истины.
