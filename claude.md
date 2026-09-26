@@ -1,22 +1,45 @@
 # Claude.md
 
-Этот файл - живая рабочая память проекта. Обновляй его каждый раз, когда меняется цель, архитектура, границы MVP, данные или структура репозитория.
+This file is the working memory of PreChess. Update it whenever the product definition, architecture, MVP boundary or repository structure changes.
 
-## 1. Что строим
+## 1. What we are building
 
-Chess Prediction MVP на виртуальных очках.
+PreChess is a **mobile-first live chess prediction market**.
 
-Цель фазы 1: проверить, держит ли пользователя связка "живая линия win-probability + ставка + резолв". В этой фазе нет реальных денег, KYC/AML, лицензии, Dota и AMM.
+Multiple spectators watch the same real chess game. During the game, PreChess opens short and medium-horizon markets about deterministic events that may happen soon: checks, captures, castling, queen trades and similar chess props.
 
-## 2. Текущая иерархия проекта
+Users trade outcome shares with virtual points. Crowd trading moves prices. Markets resolve automatically from the canonical move stream.
+
+The core loop is:
+
+`position → market → trade → watch → auto-resolve → settlement → next market`
+
+The canonical product specification is:
+`docs/product/prediction-market.md`
+
+## 2. Product rules
+
+1. Chess only.
+2. Mobile-first.
+3. Virtual points in MVP.
+4. Prediction-market mechanics, not bookmaker-fixed odds.
+5. Short auto-resolving props are the primary loop.
+6. The game-winner market is optional/secondary.
+7. Only formal, deterministic market templates may settle automatically.
+8. Users do not create arbitrary free-text markets in MVP.
+9. Market prices are crowd-driven through an AMM; LMSR is the leading candidate.
+10. Stockfish may help assess position relevance but is not the market author or resolver.
+11. Clients are never authoritative for timing, balances, trades or settlement.
+
+## 3. Repository direction
 
 ```text
-prediction-chess/
+prechess/
 ├── claude.md
-├── draft.md
-├── TD prechess
+├── README.md
 ├── docs/
 │   ├── product/
+│   │   ├── prediction-market.md   # primary source of truth
 │   │   ├── vision.md
 │   │   ├── scope.md
 │   │   └── acceptance-criteria.md
@@ -25,89 +48,78 @@ prediction-chess/
 │   │   ├── data-flow.md
 │   │   └── decisions.md
 │   └── legal/
-│       ├── regulatory-notes.md
-│       └── risk-register.md
 ├── apps/
-│   ├── web/
-│   │   ├── src/
-│   │   │   ├── app/
-│   │   │   ├── components/
-│   │   │   │   ├── board/
-│   │   │   │   ├── market-line/
-│   │   │   │   ├── bet-panel/
-│   │   │   │   └── leaderboard/
-│   │   │   ├── features/
-│   │   │   │   ├── auth/
-│   │   │   │   ├── markets/
-│   │   │   │   ├── bets/
-│   │   │   │   └── points/
-│   │   │   ├── lib/
-│   │   │   └── styles/
-│   │   └── public/
-│   └── worker/
-│       ├── src/
-│       │   ├── ingest/
-│       │   ├── stockfish/
-│       │   ├── markets/
-│       │   ├── resolvers/
-│       │   └── lib/
-│       └── bin/
+│   ├── mobile/                    # mobile client target
+│   └── worker/                    # ingestion, events, market generation, resolution
 ├── packages/
-│   ├── shared/
-│   │   ├── src/
-│   │   │   ├── types/
-│   │   │   ├── chess/
-│   │   │   ├── math/
-│   │   │   └── validators/
-│   │   └── package.json
-│   └── config/
-│       ├── eslint/
-│       ├── tsconfig/
-│       └── prettier/
-├── supabase/
-│   ├── migrations/
-│   ├── functions/
-│   └── seed/
-├── scripts/
-│   ├── dev/
-│   ├── test/
-│   └── maintenance/
+│   └── shared/                    # domain contracts and deterministic shared types
+├── supabase/                      # new schema to be designed from the new domain
 └── tests/
-    ├── unit/
-    ├── integration/
-    └── e2e/
 ```
 
-## 3. Правила роста структуры
+The old `apps/web` winner-only mock and old winner-only Supabase schema are obsolete and intentionally removed.
 
-1. Сначала меняем документацию и договоренности, потом код.
-2. Не добавляем вторую игру, реальную монетизацию или AMM, пока Chess MVP не доказал retention.
-3. Любая новая папка должна принадлежать одному из трех слоев: web, worker, shared.
-4. Если появляется новый домен, сначала заводим его в `docs/architecture/decisions.md`.
-5. Если меняется правило рынка, резолва, баланса или античита, обновляется этот файл и связанные документы.
+## 4. Target system responsibilities
 
-## 4. Короткая карта модулей
+### Mobile
+- live game screen;
+- chess board;
+- active short/medium/long markets;
+- buy/sell interaction;
+- user positions and P/L;
+- realtime market/result updates.
 
-- `apps/web` - клиент, доска, линия, ставки, баланс, лидерборд.
-- `apps/worker` - Lichess ingest, Stockfish, расчет вероятностей, резолв рынков.
-- `packages/shared` - общие типы, шахматная логика, математические преобразования, валидация.
-- `supabase` - схема данных, RLS, RPC, realtime. Контракт схемы и RPC (`place_bet`, `resolve_market`) - в `docs/architecture/decisions.md` (ADR-001); миграция - `supabase/migrations/20260623120000_init_schema.sql`.
-- `docs` - продукт, архитектура, допущения, юридические риски.
+### Worker/backend
+- live move ingestion;
+- canonical game state;
+- deterministic chess event detection;
+- market-template eligibility;
+- candidate scoring;
+- market scheduling;
+- market lock timing;
+- deterministic resolution;
+- settlement orchestration.
 
-## 5. Что нужно держать актуальным
+### Shared
+- versioned market template/domain types;
+- chess event vocabulary;
+- market lifecycle types;
+- trade/position primitives;
+- resolver contracts.
 
-- Точный scope MVP.
-- Источник оракула и его ограничения.
-- Схема данных и RPC-контракты.
-- Frontend-флоу первой ставки и резолва.
-- Решения, которые нельзя менять задним числом без заметки в `docs/architecture/decisions.md`.
+### Supabase / persistence
+The new schema must support:
+- games and moves/events;
+- templates and template versions;
+- multi-outcome markets;
+- AMM state;
+- trades;
+- positions;
+- immutable ledger;
+- deterministic settlement evidence.
 
-## 6. Следующее обновление
+Do not restore the old White/Black-only schema.
 
-После появления реального кода сюда нужно добавить:
+## 5. Rules for implementation
 
-- фактический tree проекта;
-- стек и версии зависимостей;
-- команды запуска и тестирования;
-- известные ограничения и технические долги;
-- список завершенных решений по архитектуре.
+1. Documentation before irreversible schema/API decisions.
+2. A market template is incomplete without edge cases and tests.
+3. Resolver logic must be deterministic and reproducible from stored game data.
+4. Market selection and market pricing are separate systems.
+5. AI/LLM output is never authoritative for settlement.
+6. Every live trade must use server-authoritative market state.
+7. Design explicitly for feed latency and late-information risk.
+8. Keep visible markets few and relevant.
+9. Do not expand beyond chess until the core loop proves retention.
+10. Do not add real-money flows during MVP validation.
+
+## 6. Immediate next technical decisions
+
+Before implementing the new database and trading service:
+
+1. Freeze the first market template set.
+2. Define exact event semantics and ambiguous-move rules.
+3. Simulate LMSR liquidity parameter behavior.
+4. Define market open/lock timing around live move ingestion.
+5. Define the mobile live-screen interaction.
+6. Design the new schema only after 1–4 are stable.
