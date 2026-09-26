@@ -1,3 +1,5 @@
 # Shared
 
-Cross-app types, chess helpers, math utilities, and validation.
+Shared PreChess domain contracts for chess events, market templates, market lifecycle, trades, positions and deterministic resolver results.
+
+See `docs/product/prediction-market.md`.
