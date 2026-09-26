@@ -1,85 +1,100 @@
-# Architecture Decisions
+# Архитектурные решения
 
-This file contains current architectural decisions only. The previous winner-only web MVP decision has been superseded by the PreChess live prediction-market concept.
-
----
-
-## ADR-001 — Mobile-first, chess-only product
-
-**Status:** accepted  
-**Date:** 2026-09-26
-
-PreChess is a mobile-first application focused only on live chess.
-
-The old Vite winner-only web prototype is not the product architecture and has been removed.
+В этом файле фиксируются только действующие архитектурные решения.
 
 ---
 
-## ADR-002 — Formal market templates + deterministic resolvers
+## ADR-001 — Mobile-first и только шахматы
 
-**Status:** accepted  
-**Date:** 2026-09-26
+**Статус:** принято  
+**Дата:** 2026-09-26
 
-Markets are instantiated from a versioned library of formal templates. Free-text user-authored markets are not part of the MVP.
+PreChess проектируется как мобильное приложение только для живых шахматных партий.
 
-Every template must define:
-- eligibility;
-- outcomes;
-- horizon;
-- locking rule;
-- deterministic resolver;
-- void/refund behavior;
-- edge cases.
-
-LLMs may phrase markets but may not determine settlement.
+Другие игры и виды спорта не входят в текущую архитектуру и не должны влиять на модель данных или интерфейсы.
 
 ---
 
-## ADR-003 — Market Generator selects; it does not invent arbitrary contracts
+## ADR-002 — Формальные шаблоны рынков и детерминированные резолверы
 
-**Status:** accepted  
-**Date:** 2026-09-26
+**Статус:** принято  
+**Дата:** 2026-09-26
 
-The generator evaluates the current board and chooses relevant instances from validated templates.
+Рынки создаются из версионируемой библиотеки формальных шаблонов.
 
-Stockfish may provide relevance features but is not an authoritative human-move probability model.
+Каждый шаблон обязан определять:
+- условия применимости;
+- список исходов;
+- горизонт;
+- правило блокировки торговли;
+- детерминированный резолвер;
+- правила отмены/возврата;
+- пограничные случаи.
 
----
+Свободные пользовательские текстовые рынки не входят в MVP.
 
-## ADR-004 — AMM-first market mechanism
-
-**Status:** proposed / leading choice  
-**Date:** 2026-09-26
-
-Short-lived markets need guaranteed liquidity, so an automated market maker is preferred over an order book.
-
-LMSR is the leading mechanism because it provides continuous prices, bounded market-maker loss and controllable liquidity. It must be simulated before the database/trading contract is frozen.
-
----
-
-## ADR-005 — Server-authoritative timing, trading and settlement
-
-**Status:** accepted  
-**Date:** 2026-09-26
-
-The backend owns:
-- canonical move order;
-- market open/lock/resolve state;
-- AMM state;
-- trades;
-- positions;
-- balances;
-- settlement.
-
-Client clocks and client-reported chess events are never authoritative.
+LLM может формулировать текст вопроса, но не может определять исход рынка.
 
 ---
 
-## ADR-006 — Old database schema intentionally removed
+## ADR-003 — Генератор выбирает рынок, а не придумывает произвольный контракт
 
-**Status:** accepted  
-**Date:** 2026-09-26
+**Статус:** принято  
+**Дата:** 2026-09-26
 
-The previous schema modeled only White/Black winner bets and a one-way `place_bet` flow. Reusing it would lock the new product into the wrong domain model.
+Генератор анализирует текущую позицию и выбирает подходящие экземпляры из проверенной библиотеки шаблонов.
 
-A new schema will be designed around games, chess events, template versions, multi-outcome markets, AMM state, trades, positions and an immutable ledger after market mechanics are validated.
+Stockfish может давать признаки актуальности и тактической сложности, но не является калиброванной моделью следующего человеческого хода и не должен напрямую задавать вероятность исходов.
+
+---
+
+## ADR-004 — AMM вместо стакана заявок
+
+**Статус:** основной кандидат, требуется симуляция  
+**Дата:** 2026-09-26
+
+Коротким рынкам нужна ликвидность сразу после открытия, поэтому автоматический маркет-мейкер предпочтительнее классического стакана заявок.
+
+Основной кандидат — LMSR: он даёт непрерывные цены, управляемую глубину ликвидности и математически ограниченный максимальный убыток маркет-мейкера.
+
+Перед фиксацией торгового контракта и схемы данных параметры LMSR должны быть проверены симуляциями.
+
+---
+
+## ADR-005 — Сервер определяет время, сделки и расчёт
+
+**Статус:** принято  
+**Дата:** 2026-09-26
+
+Backend является единственным источником истины для:
+- канонической последовательности ходов;
+- состояний открытия/блокировки/расчёта рынка;
+- состояния AMM;
+- сделок;
+- позиций;
+- балансов;
+- выплат и возвратов.
+
+Клиентские часы и события, вычисленные только на клиенте, не могут влиять на валидность сделки или исход рынка.
+
+---
+
+## ADR-006 — Доменная модель строится вокруг многоисходных рынков
+
+**Статус:** принято  
+**Дата:** 2026-09-26
+
+Новая схема данных должна моделировать сам рынок прогнозов, а не частный случай ставки на победителя.
+
+Базовые сущности:
+- партии и ходы;
+- шахматные события;
+- шаблоны и их версии;
+- многоисходные рынки;
+- состояние AMM;
+- сделки;
+- позиции;
+- неизменяемый ledger;
+- доказательство расчёта рынка.
+
+Схема фиксируется только после проверки первых шаблонов рынков и параметров AMM.
