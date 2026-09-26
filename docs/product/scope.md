@@ -1,32 +1,32 @@
-# Scope
+# Границы MVP
 
-## In scope
+## Входит в MVP
 
-- Mobile-first application.
-- Chess only.
-- Live real games.
-- Shared prediction markets for spectators of the same game.
-- Virtual points in MVP.
-- Short, medium and long market horizons.
-- Auto-resolving deterministic chess props.
-- Buy/sell outcome shares.
-- Crowd-driven prices through an automated market maker.
-- LMSR as the leading AMM candidate, subject to simulation.
-- Position-aware market generation from a validated template library.
-- Deterministic settlement from the canonical move feed.
-- Realtime board, prices, positions and settlement.
+- Мобильное приложение.
+- Только шахматы.
+- Реальные live-партии.
+- Общие рынки прогнозов для зрителей одной партии.
+- Виртуальные очки.
+- Короткие, средние и длинные горизонты рынков.
+- Детерминированные шахматные props с автоматическим расчётом.
+- Покупка и продажа долей исходов.
+- Цены, которые формируются толпой через автоматического маркет-мейкера.
+- LMSR как основной кандидат на роль AMM после проверки симуляциями.
+- Генерация актуальных рынков из проверенной библиотеки шаблонов.
+- Детерминированный расчёт по каноническому потоку ходов.
+- Обновление доски, цен, позиций и расчётов в реальном времени.
 
-## Out of scope for MVP
+## Не входит в MVP
 
-- Real money.
-- Deposits or withdrawals.
-- KYC/AML implementation.
-- Other games or sports.
-- User-authored free-text markets.
-- Subjective chess events.
-- Traditional bookmaker-fixed odds as the core pricing model.
-- Order-book-first market making.
-- Large catalogues of simultaneous markets.
-- AI/LLM-authoritative settlement.
+- Реальные деньги.
+- Пополнение и вывод средств.
+- Реализация KYC/AML.
+- Другие игры или виды спорта.
+- Пользовательские рынки в свободной текстовой форме.
+- Субъективные шахматные события.
+- Фиксированные букмекерские коэффициенты как основная модель цены.
+- Биржевой стакан как основной механизм ликвидности.
+- Большой каталог одновременно активных рынков.
+- Расчёт исходов на основании решений AI/LLM.
 
-The canonical details live in `prediction-market.md`.
+Подробные правила определены в `prediction-market.md`.
