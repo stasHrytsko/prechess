@@ -1,14 +1,14 @@
-# System Overview
+# Обзор системы
 
-PreChess is a mobile-first live chess prediction market.
+PreChess — мобильный рынок прогнозов на живые шахматные партии.
 
-Target layers:
+Целевые слои системы:
 
-- `apps/mobile` — live board, markets, trading, positions and realtime settlement UX.
-- `apps/worker` — move ingestion, canonical game state, event detection, market generation, locking and resolution.
-- `packages/shared` — versioned domain contracts shared by backend and clients.
-- `supabase` — persistence, realtime state, server-authoritative trading/settlement and immutable ledger.
-- external chess feed — authoritative live moves.
-- optional Stockfish/model services — relevance and initial-prior signals only.
+- `apps/mobile` — live-доска, активные рынки, торговля, позиции пользователя и расчёты в реальном времени.
+- `apps/worker` — получение ходов, каноническое состояние партии, детектор событий, генерация рынков, блокировка торговли и автоматический расчёт.
+- `packages/shared` — версионируемые доменные контракты, общие для backend и клиентов.
+- `supabase` — хранение данных, realtime-состояние, серверно-авторитетные сделки/расчёты и неизменяемый ledger.
+- внешний источник шахматных данных — авторитетный поток живых ходов.
+- Stockfish и будущие модели — дополнительные сигналы для актуальности рынков и стартовых вероятностей, но не источник истины.
 
-The product contract is `docs/product/prediction-market.md`.
+Главный продуктовый контракт: `docs/product/prediction-market.md`.
