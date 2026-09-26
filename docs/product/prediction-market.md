@@ -1,134 +1,137 @@
-# PreChess — Live Chess Prediction Market
+# PreChess — рынок прогнозов на шахматы в реальном времени
 
-**Status:** product source of truth  
-**Updated:** 2026-09-26  
-**Platform:** mobile application  
-**Scope:** chess only, virtual points in MVP
-
----
-
-## 1. Product thesis
-
-PreChess is a live prediction market layered on top of a real chess game.
-
-A group of spectators watches the same live game. While the game is being played, PreChess continuously opens short-lived markets about what will happen next on the board. Spectators buy and sell outcome shares using virtual points. The crowd itself moves market prices. When the relevant chess event happens — or the market horizon expires — the market resolves automatically from the move feed.
-
-The product is not a sportsbook with fixed odds and not a chess-analysis app with a betting widget attached.
-
-The core product is:
-
-> **watch a live position → form a hypothesis about the near future → trade it against the crowd → watch the moves resolve it → immediately get the next market**
-
-The long-term "who wins the game?" market may exist, but it is secondary. The main engagement loop is a stream of short and medium-horizon chess prediction markets.
+**Статус:** главный продуктовый документ  
+**Обновлено:** 2026-09-26  
+**Платформа:** мобильное приложение  
+**Фокус:** только шахматы, в MVP — только виртуальные очки
 
 ---
 
-## 2. What makes PreChess different
+## 1. Суть продукта
 
-Traditional chess viewing is passive: watch, evaluate, wait.
+PreChess — это рынок прогнозов, наложенный поверх реальной шахматной партии.
 
-Traditional betting is usually coarse: pick a winner before or during the game and wait for the final result.
+Группа зрителей одновременно смотрит одну и ту же партию. Пока партия идёт, PreChess постоянно открывает короткие рынки на то, что произойдёт на доске в ближайшем будущем. Зрители покупают и продают доли исходов за виртуальные очки. Цену двигает сама толпа. Когда соответствующее шахматное событие происходит — либо заканчивается горизонт рынка — рынок автоматически закрывается и рассчитывается по потоку ходов.
 
-PreChess turns every phase of a chess game into a sequence of small forecastable questions:
+Это не букмекер с фиксированными коэффициентами и не шахматный анализатор с прикрученной кнопкой ставки.
 
-- Will White castle in the next 4 White moves?
-- What happens first: check, capture, castle, or none of these?
-- Will the queens be traded before move 20?
-- Which side makes the next capture?
-- Will there be a check in the next 6 plies?
-- Will the next captured piece be a knight or bishop?
-- Will a pawn reach the fifth rank before the next capture?
-- Which king comes under check first?
+Ядро продукта:
 
-The spectator is no longer only asking "who is better?" but "what exactly happens next?"
+> **смотришь позицию → формируешь гипотезу о ближайшем будущем → торгуешь против мнения толпы → наблюдаешь следующие ходы → рынок автоматически рассчитывается → сразу получаешь следующий рынок**
 
-That creates repeated decisions and repeated resolutions inside one game.
+Длинный рынок «кто победит в партии?» может существовать, но он вторичен. Главный цикл вовлечения — поток коротких и средних рынков на ближайшие события партии.
 
 ---
 
-## 3. Core loop
+## 2. Чем PreChess отличается
 
-The canonical loop is:
+Обычный просмотр шахмат пассивен: смотришь, оцениваешь позицию, ждёшь.
 
-1. A live chess move arrives.
-2. The board state is updated.
-3. The chess event detector derives objective facts from the move and position.
-4. The market generator evaluates which market templates are currently applicable.
-5. Candidate markets are scored for relevance.
-6. The best few markets are opened.
-7. All spectators of that game see the same live markets.
-8. Users buy or sell outcome shares with virtual points.
-9. Trading changes market prices.
-10. The next real chess moves arrive.
-11. Markets either resolve early when their event occurs or expire at a defined horizon.
-12. Winning shares redeem at 100 points; losing shares redeem at 0.
-13. P/L and crowd accuracy update instantly.
-14. New markets replace resolved ones.
+Обычная ставка грубее: выбираешь победителя до или во время партии и ждёшь финального результата.
 
-The user should be able to complete this loop many times during one chess game.
+PreChess превращает каждую фазу партии в последовательность маленьких прогнозируемых вопросов:
 
----
+- Сделают ли белые рокировку в течение следующих 4 своих ходов?
+- Что произойдёт первым: шах, взятие, рокировка или ничего из этого?
+- Разменяют ли ферзей до 20-го хода?
+- Какая сторона сделает следующее взятие?
+- Будет ли шах в течение следующих 6 полуходов?
+- Какую фигуру возьмут следующей: коня или слона?
+- Дойдёт ли пешка до пятой горизонтали до следующего взятия?
+- Какому королю первому объявят шах?
 
-## 4. Three horizons of prediction
+Зритель спрашивает уже не только «у кого лучше позиция?», а «что конкретно произойдёт дальше?».
 
-The live screen should normally expose only a small number of markets, not a catalogue.
-
-Target structure:
-
-### 4.1 Long market
-One slow market that can remain open for much of the game.
-
-Example:
-- Who wins the game?
-- White / Draw / Black
-
-This market gives continuity but is not the main loop.
-
-### 4.2 Medium market
-A context-specific event with a horizon of several moves.
-
-Examples:
-- Will White castle before move 12?
-- Will the queens be traded before move 20?
-- Will either side lose a rook before move 25?
-
-### 4.3 Short market
-A very fast market that resolves in the next few plies.
-
-Example:
-
-**What happens first in the next 6 plies?**
-- Check
-- Capture
-- Castle
-- None
-
-The short market is the primary engagement mechanic.
-
-The app should usually show around 3 active markets per game. The exact number is a product-tuning variable, but the default principle is **few, relevant, fast**.
+За одну партию возникает много отдельных решений и много быстрых развязок.
 
 ---
 
-## 5. Market language, not thousands of handwritten questions
+## 3. Основной игровой цикл
 
-We do not manually author every possible market.
+Канонический цикл:
 
-We define a finite, formal market language: a library of validated templates plus parameters.
+1. Приходит очередной ход реальной партии.
+2. Обновляется состояние доски.
+3. Детектор шахматных событий фиксирует объективные факты хода и новой позиции.
+4. Генератор рынков проверяет, какие шаблоны сейчас применимы.
+5. Кандидаты оцениваются по актуальности и качеству.
+6. Открываются несколько лучших рынков.
+7. Все зрители этой партии видят одни и те же рынки.
+8. Пользователи покупают или продают доли исходов за виртуальные очки.
+9. Торговля двигает цены.
+10. Приходят следующие реальные ходы.
+11. Рынок либо рассчитывается раньше срока, когда нужное событие произошло, либо доживает до заданного горизонта.
+12. Выигравшая доля погашается по 100 очков, проигравшая — по 0.
+13. P/L и результат позиции пользователя обновляются сразу.
+14. Рассчитанный рынок заменяется новым.
 
-A template defines:
+Пользователь должен успевать пройти этот цикл много раз за одну шахматную партию.
 
-- market family;
-- human-readable question pattern;
-- legal outcomes;
-- start condition;
-- horizon;
-- eligibility rules;
-- close rule;
-- deterministic resolve rule;
-- void/refund rules;
-- optional relevance features.
+---
 
-Example:
+## 4. Три горизонта прогнозов
+
+На live-экране должно быть мало рынков, а не каталог из десятков вариантов.
+
+Базовая структура:
+
+### 4.1 Длинный рынок
+
+Один медленный рынок, который может жить большую часть партии.
+
+Пример:
+- Кто победит?
+- Белые / Ничья / Чёрные
+
+Он создаёт общий контекст, но не является главным игровым циклом.
+
+### 4.2 Средний рынок
+
+Контекстное событие с горизонтом в несколько ходов.
+
+Примеры:
+- Сделают ли белые рокировку до 12-го хода?
+- Разменяют ли ферзей до 20-го хода?
+- Потеряет ли какая-либо сторона ладью до 25-го хода?
+
+### 4.3 Короткий рынок
+
+Очень быстрый рынок, который должен рассчитаться в ближайшие несколько полуходов.
+
+Пример:
+
+**Что произойдёт первым в следующие 6 полуходов?**
+- Шах
+- Взятие
+- Рокировка
+- Ничего
+
+Короткий рынок — главная механика вовлечения.
+
+Обычно на одну партию стоит показывать около 3 активных рынков. Точное число можно настраивать, но базовый принцип: **мало, актуально, быстро**.
+
+---
+
+## 5. Язык рынков вместо тысяч написанных вручную вопросов
+
+Не нужно заранее придумывать каждую конкретную ставку.
+
+Нужно определить конечный формальный язык рынков: библиотеку проверенных шаблонов и набор параметров.
+
+Шаблон задаёт:
+
+- семейство рынка;
+- шаблон понятного пользователю вопроса;
+- допустимые исходы;
+- условие старта;
+- горизонт;
+- условия применимости;
+- правило блокировки торговли;
+- детерминированное правило расчёта;
+- правила отмены/возврата;
+- признаки, по которым можно оценить актуальность рынка.
+
+Пример:
 
 ```text
 template: FIRST_EVENT
@@ -142,234 +145,251 @@ outcomes:
 resolver: first matching event in canonical move order
 ```
 
-The UI may render this as:
+В интерфейсе это может выглядеть так:
 
-> What happens first in the next 6 plies?
+> Что произойдёт первым в следующие 6 полуходов?
 
-The text is presentation. The formal template is the contract.
-
----
-
-## 6. Why templates must be deterministic
-
-Every market must be resolvable from chess data without human judgement.
-
-Good events:
-
-- check;
-- checkmate;
-- capture;
-- capture by a specific side;
-- captured piece type;
-- castling;
-- kingside vs queenside castling;
-- queen trade;
-- promotion;
-- en passant;
-- pawn reaches a specified rank;
-- a specified piece is captured;
-- material threshold crossed;
-- game result;
-- repetition/draw condition when objectively represented by the game result/feed.
-
-Bad events for the core system:
-
-- "attack on the king";
-- "dangerous position";
-- "strong initiative";
-- "brilliant move";
-- "sacrifice" unless formally defined;
-- "player is under pressure";
-- "aggressive move".
-
-These require interpretation. They may later exist only if they are converted into precise machine rules.
-
-Rule: **if two independent resolvers can disagree about the result, the market definition is not ready.**
+Текст вопроса — это представление. Формальный шаблон — это контракт рынка.
 
 ---
 
-## 7. Initial event vocabulary
+## 6. Почему рынок должен рассчитываться однозначно
 
-The first implementation should support a small but useful event vocabulary.
+Каждый рынок должен рассчитываться из шахматных данных без человеческой интерпретации.
 
-### Move-level events
-- quiet move
-- capture
-- check
-- checkmate
-- castle kingside
-- castle queenside
-- promotion
-- en passant
+Хорошие события:
 
-### Piece-level events
-- knight captured
-- bishop captured
-- rook captured
-- queen captured
-- pawn captured
-- specific tracked piece captured
+- шах;
+- мат;
+- взятие;
+- взятие конкретной стороной;
+- тип взятой фигуры;
+- рокировка;
+- короткая или длинная рокировка;
+- размен ферзей;
+- превращение пешки;
+- взятие на проходе;
+- достижение пешкой заданной горизонтали;
+- взятие конкретной отслеживаемой фигуры;
+- пересечение формально заданного порога по материалу;
+- результат партии;
+- объективно определяемый тип окончания партии, если источник данных надёжно его передаёт.
 
-### Position/state events
-- queens no longer both remain on the board
-- material advantage crosses a defined threshold
-- pawn reaches rank N
-- king loses castling rights
-- both sides have castled
-- only one side retains a queen
+Плохие события для ядра системы:
 
-### Game-level events
-- White wins
-- Black wins
-- draw
-- game ends by feed-provided result/reason where reliable
+- «атака на короля»;
+- «опасная позиция»;
+- «сильная инициатива»;
+- «блестящий ход»;
+- «жертва», если она не определена формально;
+- «игрок под давлением»;
+- «агрессивный ход».
 
-This vocabulary can grow, but every addition must include a deterministic resolver and edge-case tests.
+Они требуют толкования. Такие рынки могут появиться позже только после того, как будут сведены к точным машинным правилам.
+
+Правило:
+
+> **если два независимых резолвера могут честно прийти к разным результатам, контракт рынка ещё не готов.**
 
 ---
 
-## 8. Initial market template families
+## 7. Начальный словарь шахматных событий
+
+Первая реализация должна поддерживать небольшой, но полезный словарь.
+
+### События отдельного хода
+- тихий ход;
+- взятие;
+- шах;
+- мат;
+- короткая рокировка;
+- длинная рокировка;
+- превращение пешки;
+- взятие на проходе.
+
+### События, связанные с фигурами
+- взят конь;
+- взят слон;
+- взята ладья;
+- взят ферзь;
+- взята пешка;
+- взята конкретная отслеживаемая фигура.
+
+### События позиции
+- на доске больше нет обоих ферзей;
+- материальный перевес пересёк заданный порог;
+- пешка достигла горизонтали N;
+- король потерял право на рокировку;
+- обе стороны сделали рокировку;
+- ферзь остался только у одной стороны.
+
+### События партии
+- победа белых;
+- победа чёрных;
+- ничья;
+- партия закончилась с указанной источником причиной, если этому источнику можно доверять.
+
+Словарь можно расширять, но каждое новое событие должно иметь детерминированный резолвер и тесты пограничных случаев.
+
+---
+
+## 8. Начальные семейства шаблонов рынков
 
 ### 8.1 FIRST_EVENT
-Question: what happens first within a horizon?
 
-Example:
-> What happens first in the next 6 plies?
-> Check / Capture / Castle / None
+Вопрос: какое событие произойдёт первым в заданном горизонте?
 
-Resolution:
-- scan moves after market opening;
-- the first matching event wins;
-- if no listed event occurs before the horizon, `none` wins;
-- if one move contains multiple events, a predefined precedence rule must be part of the template.
+Пример:
+> Что произойдёт первым в следующие 6 полуходов?  
+> Шах / Взятие / Рокировка / Ничего
 
-Preferred alternative: design outcome sets that avoid ambiguous simultaneous events where possible.
+Расчёт:
+- анализируем ходы после открытия рынка;
+- выигрывает первое совпавшее событие;
+- если ни одно событие не произошло до конца горизонта, выигрывает `none`;
+- если один ход одновременно соответствует нескольким исходам, правило должно быть заранее определено контрактом.
+
+Предпочтительный подход — по возможности конструировать взаимоисключающие исходы и не прятать сложный приоритет внутри резолвера.
 
 ### 8.2 EVENT_WITHIN
-Question: will event X occur within N plies?
 
-Example:
-> Will there be a check in the next 6 plies?
-> Yes / No
+Вопрос: произойдёт ли событие X в течение N полуходов?
+
+Пример:
+> Будет ли шах в следующие 6 полуходов?  
+> Да / Нет
 
 ### 8.3 PLAYER_EVENT_WITHIN
-Question: will a particular side perform event X within its next N moves?
 
-Example:
-> Will White castle within the next 4 White moves?
-> Yes / No
+Вопрос: совершит ли конкретная сторона событие X в течение своих следующих N ходов?
 
-The horizon is side-relative, not generic ply count.
+Пример:
+> Сделают ли белые рокировку в течение следующих 4 своих ходов?  
+> Да / Нет
+
+Здесь горизонт считается по ходам конкретной стороны, а не по общему числу полуходов.
 
 ### 8.4 EVENT_BEFORE_MOVE
-Question: will event X happen before a fixed move number?
 
-Example:
-> Will the queens be traded before move 20?
-> Yes / No
+Вопрос: случится ли событие X до фиксированного номера хода?
+
+Пример:
+> Разменяют ли ферзей до 20-го хода?  
+> Да / Нет
 
 ### 8.5 NEXT_ACTOR
-Question: which side performs event X next?
 
-Example:
-> Who makes the next capture?
-> White / Black / No capture before horizon
+Вопрос: какая сторона следующей совершит событие X?
+
+Пример:
+> Кто сделает следующее взятие?  
+> Белые / Чёрные / Взятия не будет до конца горизонта
 
 ### 8.6 NEXT_OBJECT
-Question: what object/type is involved in the next event?
 
-Example:
-> Which piece type is captured next?
-> Pawn / Knight / Bishop / Rook / Queen / None before horizon
+Вопрос: какой объект или тип фигуры будет связан со следующим событием?
 
-Only expose outcome sets that are understandable on mobile.
+Пример:
+> Какую фигуру возьмут следующей?  
+> Пешку / Коня / Слона / Ладью / Ферзя / Никого до конца горизонта
+
+В мобильном интерфейсе нужно показывать только такие наборы исходов, которые считываются мгновенно.
 
 ### 8.7 RACE
-Question: which of two or more events happens first?
 
-Example:
-> What happens first?
-> White castles / first capture / first check / none before horizon
+Вопрос: какое из нескольких событий произойдёт раньше?
+
+Пример:
+> Что произойдёт первым?  
+> Белые рокируются / Первое взятие / Первый шах / Ничего до конца горизонта
 
 ### 8.8 GAME_RESULT
-Long-horizon market:
-> Who wins?
-> White / Draw / Black
 
-This exists as an anchor, not as the primary engagement mechanic.
+Длинный рынок:
+> Кто победит?  
+> Белые / Ничья / Чёрные
+
+Это якорный рынок, а не основная механика продукта.
 
 ---
 
-## 9. Market Generator
+## 9. Генератор рынков
 
-The Market Generator does not invent arbitrary prose.
+Генератор рынков не должен придумывать произвольные вопросы.
 
-Its job is to take the current chess position and the validated template library and answer:
+Его задача — взять текущую шахматную позицию и библиотеку проверенных шаблонов и ответить:
 
-> Which markets are applicable and interesting right now?
+> Какие рынки прямо сейчас применимы и достаточно интересны?
 
-Pipeline:
+Пайплайн:
 
 ```text
-Current position
+Текущая позиция
     ↓
-Template eligibility
+Проверка применимости шаблонов
     ↓
-Candidate instantiation
+Создание кандидатов
     ↓
-Candidate quality scoring
+Оценка качества кандидатов
     ↓
-Deduplication / diversity
+Удаление дублей + обеспечение разнообразия
     ↓
-Open top markets
+Открытие лучших рынков
 ```
 
-Example:
+Пример:
 
-If White has already castled, a "Will White castle?" market is ineligible.
+Если белые уже рокировались, рынок «Сделают ли белые рокировку?» больше неприменим.
 
-If White can legally castle and castling is positionally plausible, the market becomes a candidate.
+Если у белых сохранилось право на рокировку и она реально возможна в ближайшем будущем, такой рынок становится кандидатом.
 
-If queens have already been traded, all future queen-trade markets are ineligible.
+Если ферзи уже разменяны, все будущие рынки на размен ферзей неприменимы.
 
 ---
 
-## 10. Relevance scoring
+## 10. Оценка актуальности рынка
 
-A market should not be opened merely because it is technically possible.
+Рынок не должен появляться только потому, что он технически возможен.
 
-Each candidate should receive a relevance score based on features such as:
+Каждый кандидат оценивается по нескольким признакам.
 
-### Immediacy
-Can this market plausibly resolve soon?
+### Близость развязки
 
-Shorter useful resolution is generally better.
+Может ли этот рынок реально рассчитаться скоро?
 
-### Uncertainty
-Is the outcome non-obvious?
+При прочих равных быстрая полезная развязка лучше долгого ожидания.
 
-A 99/1 question is usually bad entertainment. A market around meaningful uncertainty is better.
+### Неопределённость
 
-### Position relevance
-Does the current board make this question naturally interesting?
+Не является ли исход слишком очевидным?
 
-Example: castling is relevant only while castling is available and strategically live.
+Вопрос с фактическим соотношением 99/1 обычно скучен. Лучше рынки, где есть реальная неопределённость.
 
-### Comprehensibility
-Can a normal chess spectator understand the question immediately?
+### Связь с текущей позицией
 
-### Resolvability
-Can the market be resolved from the move feed with no subjective interpretation?
+Естественно ли этот вопрос возникает именно сейчас?
 
-### Diversity
-Do the currently visible markets ask meaningfully different questions?
+Например, рынок на рокировку имеет смысл только пока право на рокировку сохраняется и решение о ней действительно актуально.
 
-Avoid three markets that are all indirect versions of "will there be a capture?"
+### Понятность
 
-### Freshness
-Do not repeatedly show the same template unless the position has meaningfully changed.
+Может ли обычный шахматный зритель понять вопрос мгновенно?
 
-A possible conceptual score:
+### Однозначность расчёта
+
+Можно ли рассчитать рынок только по потоку ходов, без субъективного толкования?
+
+### Разнообразие
+
+Задают ли одновременно показанные рынки действительно разные вопросы?
+
+Не стоит показывать три варианта одного и того же вопроса «будет ли взятие?».
+
+### Свежесть
+
+Не нужно повторять один и тот же шаблон снова и снова, если позиция не изменилась существенно.
+
+Концептуально оценка может выглядеть так:
 
 ```text
 market_score =
@@ -382,269 +402,276 @@ market_score =
 - ambiguity_penalty
 ```
 
-The exact formula is not fixed yet.
+Точная формула пока не зафиксирована.
 
 ---
 
-## 11. Role of Stockfish
+## 11. Роль Stockfish
 
-Stockfish is useful, but it must not be treated as the market author.
+Stockfish полезен, но не должен быть «автором рынка».
 
-Stockfish is optimized to evaluate chess positions and moves. It is not directly a calibrated model of what a human player will do next.
+Он оптимизирован для оценки шахматной позиции и лучших ходов. Это не калиброванная модель того, что живой человек реально сыграет дальше.
 
-Use Stockfish as one signal among several:
+Stockfish можно использовать как один из сигналов:
 
-- current evaluation;
-- top candidate moves;
-- tactical volatility;
-- whether an event appears in top lines;
-- approximate depth to likely tactical events;
-- position complexity.
+- текущая оценка позиции;
+- лучшие кандидатные ходы;
+- тактическая волатильность;
+- наличие нужного события в основных вариантах;
+- примерная глубина до вероятных тактических событий;
+- сложность позиции.
 
-Do not translate "Stockfish's best line contains O-O" into "70% chance White castles".
+Нельзя превращать утверждение «в лучшей линии Stockfish есть O-O» в «вероятность рокировки белых 70%».
 
-For future market-probability estimation, a human-move model or historical game model may be more appropriate than engine evaluation alone.
+Для будущей оценки стартовых вероятностей может оказаться полезнее модель человеческих ходов или статистика исторических партий.
 
-For MVP, the crowd itself is the main probability mechanism.
-
----
-
-## 12. How a prediction market works
-
-A market has mutually exclusive outcomes.
-
-Example:
-
-> What happens first in the next 6 plies?
-
-- Check
-- Capture
-- Castle
-- None
-
-Each outcome has a tradable share.
-
-One winning share redeems for **100 points** when the market resolves.
-
-Losing shares redeem for **0**.
-
-The displayed market price therefore acts as an implied crowd probability.
-
-Example:
-
-- Check — 31
-- Capture — 42
-- Castle — 17
-- None — 10
-
-The sum is approximately 100.
-
-A user who believes Check is underpriced buys Check shares.
-
-If many users buy Check, its price rises.
-
-This is the central social signal of the product:
-
-> **the price is the crowd's current belief**
+В MVP главным механизмом определения цены остаётся сама толпа.
 
 ---
 
-## 13. Why we need an automated market maker
+## 12. Как работает рынок прогнозов
 
-Short chess markets may live only seconds or minutes.
+У рынка есть взаимоисключающие исходы.
 
-A traditional order book creates a cold-start problem:
+Пример:
 
-- a buyer needs a seller;
-- thin markets have poor liquidity;
-- new markets may have no counterparty;
-- a two-minute market cannot wait for matching orders.
+> Что произойдёт первым в следующие 6 полуходов?
 
-Therefore the recommended MVP market mechanism is an automated market maker.
+- Шах
+- Взятие
+- Рокировка
+- Ничего
 
-The leading candidate is **LMSR — Logarithmic Market Scoring Rule**.
+На каждый исход существует торгуемая доля.
 
-Why it fits:
+Одна выигравшая доля после расчёта превращается в **100 очков**.
 
-- every outcome always has a price;
-- a user can trade without waiting for another user;
-- prices move continuously as shares are bought and sold;
-- the market naturally aggregates crowd beliefs;
-- liquidity can be controlled by a parameter;
-- maximum market-maker loss can be bounded mathematically.
+Проигравшая доля — в **0 очков**.
 
-This decision must be validated with simulation before production implementation.
+Поэтому текущая цена исхода становится приблизительной оценкой вероятности глазами толпы.
+
+Пример:
+
+- Шах — 31
+- Взятие — 42
+- Рокировка — 17
+- Ничего — 10
+
+Сумма примерно равна 100.
+
+Пользователь считает, что «Шах» недооценён рынком, и покупает его доли.
+
+Если многие начинают покупать «Шах», его цена растёт.
+
+Это главный социальный сигнал продукта:
+
+> **цена — текущее мнение толпы о вероятности исхода.**
 
 ---
 
-## 14. LMSR conceptual model
+## 13. Зачем нужен автоматический маркет-мейкер
 
-For outcomes `1..n`, the market maker tracks outstanding share quantities.
+Короткий шахматный рынок может жить всего несколько секунд или минут.
 
-The cost function is:
+Классический стакан заявок создаёт проблему холодного старта:
+
+- покупателю нужен продавец;
+- у маленького рынка плохая ликвидность;
+- у нового рынка может вообще не быть второй стороны;
+- двухминутный рынок не может ждать совпадения ордеров.
+
+Поэтому для MVP предпочтителен автоматический маркет-мейкер.
+
+Главный кандидат — **LMSR (Logarithmic Market Scoring Rule)**.
+
+Почему он подходит:
+
+- у каждого исхода всегда есть цена;
+- пользователь может торговать, не дожидаясь контрагента;
+- цены непрерывно меняются по мере покупок и продаж;
+- рынок агрегирует мнение толпы;
+- глубина ликвидности контролируется параметром;
+- максимальный убыток маркет-мейкера математически ограничен.
+
+Перед окончательной реализацией LMSR необходимо прогнать через симуляции.
+
+---
+
+## 14. Концептуальная модель LMSR
+
+Для исходов `1..n` маркет-мейкер хранит количество выпущенных долей каждого исхода.
+
+Функция стоимости:
 
 ```text
 C(q) = b * ln(sum(exp(q_i / b)))
 ```
 
-Where:
-- `q_i` = outstanding shares of outcome i;
-- `b` = liquidity parameter.
+Где:
+- `q_i` — количество выпущенных долей исхода i;
+- `b` — параметр ликвидности.
 
-The instantaneous price of outcome i is the softmax:
+Мгновенная цена исхода i:
 
 ```text
 p_i = exp(q_i / b) / sum(exp(q_j / b))
 ```
 
-Properties:
-- prices sum to 1;
-- buying an outcome raises its price;
-- other outcomes fall;
-- larger `b` means deeper liquidity and less price movement per trade;
-- smaller `b` creates more responsive but more volatile prices.
+Свойства:
+- сумма цен равна 1;
+- покупка исхода повышает его цену;
+- цены остальных исходов снижаются;
+- больший `b` означает более глубокую ликвидность и меньший сдвиг цены от одной сделки;
+- меньший `b` делает рынок чувствительнее, но более волатильным.
 
-In PreChess UI, `p = 0.37` can be displayed as **37** or **37%** depending on the final visual language.
+В интерфейсе PreChess `p = 0.37` можно показывать как **37** или **37%** — это отдельное UX-решение.
 
-The app should hide the formula from normal users. They see a simple live price.
-
----
-
-## 15. Trading flow
-
-Example market:
-
-> Will there be a check in the next 6 plies?
-
-Current market:
-- Yes — 34
-- No — 66
-
-User has 1,000 virtual points.
-
-User believes Yes is too cheap.
-
-They tap **Yes**, choose 200 points, and see before confirmation:
-
-- current price;
-- estimated average execution price;
-- shares received;
-- possible redemption if Yes wins;
-- price impact;
-- remaining balance.
-
-After confirmation:
-- points are debited;
-- shares are credited;
-- LMSR state changes;
-- Yes price may move from 34 to 38;
-- all viewers receive the updated price in realtime.
-
-The user now owns a live position.
+Обычному пользователю формулу видеть не нужно. Он видит только понятную живую цену.
 
 ---
 
-## 16. Selling before resolution
+## 15. Как пользователь торгует
 
-A prediction market is more interesting if a position is tradable, not just a one-way bet.
+Пример рынка:
 
-Example:
+> Будет ли шах в следующие 6 полуходов?
 
-1. User buys Yes at an average price of 34.
-2. A move changes the position.
-3. The crowd now prices Yes at 58.
-4. The user can sell some or all shares before resolution.
-5. Profit or loss is realized according to the LMSR cost difference.
+Текущие цены:
+- Да — 34
+- Нет — 66
 
-This creates two skills:
+У пользователя 1 000 виртуальных очков.
 
-- predicting the final event;
-- predicting how crowd belief will move before the event resolves.
+Он считает, что «Да» стоит слишком дёшево.
 
-MVP recommendation: support both buy and sell if implementation complexity remains manageable. If a first prototype temporarily supports buy-only, this must be explicitly treated as a reduced prototype, not the final market mechanic.
+Пользователь нажимает **Да**, выбирает 200 очков и до подтверждения видит:
+
+- текущую цену;
+- ожидаемую среднюю цену исполнения;
+- количество получаемых долей;
+- потенциальное погашение при победе исхода;
+- влияние сделки на цену;
+- остаток баланса.
+
+После подтверждения:
+- очки списываются;
+- доли начисляются;
+- состояние LMSR меняется;
+- цена «Да» может вырасти, например, с 34 до 38;
+- все зрители получают обновлённую цену в реальном времени.
+
+Теперь у пользователя открыта позиция.
 
 ---
 
-## 17. Market lifecycle
+## 16. Продажа позиции до расчёта
 
-Every market follows a strict state machine.
+Рынок прогнозов интереснее, если позицию можно не только открыть, но и закрыть до финального результата.
+
+Пример:
+
+1. Пользователь купил «Да» по средней цене 34.
+2. Следующий ход изменил восприятие позиции.
+3. Толпа теперь оценивает «Да» в 58.
+4. Пользователь может продать часть или все доли до расчёта.
+5. Прибыль или убыток фиксируется через разницу функции стоимости LMSR.
+
+Так появляются два разных навыка:
+
+- предсказать конечное событие;
+- предсказать, как изменится мнение толпы ещё до развязки.
+
+Рекомендация для MVP: поддержать и покупку, и продажу, если сложность реализации остаётся разумной. Если самый первый технический прототип временно будет поддерживать только покупку, это нужно считать урезанным тестовым режимом, а не конечной механикой.
+
+---
+
+## 17. Жизненный цикл рынка
+
+Каждый рынок проходит строгую машину состояний:
 
 ```text
 candidate
-→ scheduled/opening
+→ opening
 → open
 → locked
 → resolved | void
 → settled
 ```
 
-### Candidate
-Generated internally but not visible.
+### Candidate — кандидат
 
-### Opening
-Initial outcomes and starting AMM state are prepared.
+Рынок создан внутри системы, но ещё не показывается пользователям.
 
-### Open
-Users may trade.
+### Opening — подготовка
 
-### Locked
-No more trades. This prevents race conditions around a move or resolution boundary.
+Подготавливаются исходы и начальное состояние AMM.
 
-### Resolved
-A deterministic outcome is known.
+### Open — открыт
 
-### Void
-The contract cannot be resolved according to its rules.
+Пользователи могут торговать.
 
-### Settled
-Share redemptions/refunds are applied to user balances and the ledger.
+### Locked — заблокирован
 
-State transitions must be server-authoritative.
+Новые сделки запрещены. Это защищает рынок от гонок данных рядом с новым ходом или моментом расчёта.
 
----
+### Resolved — исход определён
 
-## 18. When markets open and close
+Детерминированный победивший исход уже известен.
 
-Markets must never allow a user to trade on information that the server already knows but the client has not yet rendered.
+### Void — отменён
 
-Therefore timing must be tied to the authoritative move feed.
+Рынок невозможно корректно рассчитать по его контракту.
 
-Recommended sequence:
+### Settled — рассчитан финансово
 
-1. move N received by backend;
-2. event detector processes move N;
-3. old markets resolve if applicable;
-4. position N becomes canonical;
-5. generator creates/selects new markets;
-6. markets open with `start_ply = N`;
-7. clients receive board + markets;
-8. users trade;
-9. immediately before processing move N+1 for resolution, affected market trading is locked;
-10. move N+1 is processed;
-11. relevant markets resolve or continue.
+Доли погашены, возвраты применены, балансы и ledger обновлены.
 
-The exact lock window depends on feed latency and must be tested.
-
-Client clocks must never determine market validity.
+Все переходы между состояниями должны определяться сервером.
 
 ---
 
-## 19. Deterministic resolver
+## 18. Когда рынок открывается и блокируется
 
-The resolver is one of the most important pieces of the system.
+Нельзя позволять пользователю торговать на информации, которую сервер уже получил, а клиент ещё не успел показать.
 
-Inputs:
-- market template + parameters;
-- canonical start position;
-- canonical move stream;
-- market horizon.
+Поэтому время рынка должно быть привязано к авторитетному потоку ходов.
 
-Outputs:
-- unresolved;
-- winning outcome;
-- void/refund.
+Рекомендуемая последовательность:
 
-Example: FIRST_EVENT
+1. backend получает ход N;
+2. детектор событий обрабатывает ход N;
+3. старые рынки рассчитываются, если для них наступил исход;
+4. позиция после N становится канонической;
+5. генератор создаёт и выбирает новые рынки;
+6. рынки открываются с `start_ply = N`;
+7. клиенты получают доску и рынки;
+8. пользователи торгуют;
+9. перед обработкой хода N+1 затрагиваемые рынки блокируются;
+10. ход N+1 обрабатывается;
+11. рынки рассчитываются либо продолжают жить.
+
+Точное окно блокировки зависит от задержки источника и должно определяться экспериментально.
+
+Клиентские часы никогда не должны определять валидность сделки.
+
+---
+
+## 19. Детерминированный резолвер
+
+Резолвер — одна из самых важных частей системы.
+
+Вход:
+- шаблон рынка и параметры;
+- каноническая стартовая позиция;
+- канонический поток ходов;
+- горизонт рынка.
+
+Выход:
+- рынок ещё не определён;
+- победивший исход;
+- отмена/возврат.
+
+Пример для FIRST_EVENT:
 
 ```text
 start_ply = 30
@@ -653,281 +680,295 @@ events = [check, capture, castle]
 fallback = none
 ```
 
-For plies 31..36:
-- parse each move;
-- derive its event flags;
-- apply contract precedence rules;
-- the first matching outcome wins.
+Для полуходов 31..36:
+- разбираем каждый ход;
+- вычисляем флаги шахматных событий;
+- применяем правила контракта;
+- первое подходящее событие становится победителем.
 
-If nothing matches by ply 36, `none` wins.
+Если до 36-го полухода ничего не произошло, выигрывает `none`.
 
-Resolution must be reproducible from stored PGN/moves.
-
----
-
-## 20. Edge cases must be part of the contract
-
-Every template must define behavior for:
-
-- game ends before horizon;
-- player resigns;
-- timeout;
-- draw agreed;
-- stalemate;
-- checkmate;
-- feed disconnect;
-- corrected move/feed rollback;
-- simultaneous event flags on one move;
-- market opens just before game ends;
-- castling rights disappear without castling;
-- tracked piece is promoted/replaced/captured;
-- result source conflicts with board-derived state.
-
-No market is production-ready until these cases are specified and tested.
+Расчёт должен полностью воспроизводиться из сохранённых ходов/PGN.
 
 ---
 
-## 21. Example: FIRST_EVENT ambiguity
+## 20. Пограничные случаи являются частью контракта
 
-A capture can also give check.
+Каждый шаблон обязан явно описывать поведение, если:
 
-If the outcomes are:
+- партия заканчивается раньше горизонта;
+- игрок сдаётся;
+- заканчивается время;
+- игроки соглашаются на ничью;
+- возникает пат;
+- возникает мат;
+- пропадает связь с источником ходов;
+- источник исправляет или откатывает ход;
+- один ход одновременно создаёт несколько событий;
+- рынок открывается прямо перед окончанием партии;
+- право на рокировку исчезает без самой рокировки;
+- отслеживаемая фигура превращается, заменяется или берётся;
+- результат источника конфликтует с состоянием доски.
 
-- Check
-- Capture
-- Castle
-- None
-
-and the move `Bxh7+` occurs, both "capture" and "check" are true.
-
-This must not be left to interpretation.
-
-Possible solutions:
-
-1. Define explicit precedence, e.g. check > capture > castle.
-2. Define compound outcomes, e.g. "capture with check".
-3. Use mutually exclusive derived classes.
-4. Avoid this market configuration entirely.
-
-Preferred principle: **design markets with naturally exclusive outcomes instead of relying on hidden precedence rules.**
+Рынок не готов к продакшену, пока эти случаи не определены и не покрыты тестами.
 
 ---
 
-## 22. Crowd and social layer
+## 21. Пример неоднозначности FIRST_EVENT
 
-All spectators of the same game should see the same canonical market prices.
+Одно взятие может одновременно дать шах.
 
-Useful social signals:
+Если исходы:
 
-- current outcome prices;
-- percentage of active traders on each side;
-- number of traders;
-- total virtual points traded;
-- recent price movement;
-- user's position vs crowd;
-- optional friends/following comparison later.
+- Шах
+- Взятие
+- Рокировка
+- Ничего
 
-Example:
+и сыгран ход `Bxh7+`, истинны сразу два события: «взятие» и «шах».
 
-> Check — 38  
-> 62% of traders bought Check
+Это нельзя оставлять на усмотрение системы постфактум.
 
-But do not confuse:
-- share price;
-- user count;
-- traded volume.
+Возможные решения:
 
-They are different signals.
+1. Задать явный приоритет, например шах > взятие > рокировка.
+2. Создать составной исход, например «взятие с шахом».
+3. Использовать заранее взаимоисключающие производные классы событий.
+4. Вообще не создавать такой набор исходов.
 
-The core emotional moment is:
+Предпочтительный принцип:
 
-> "The crowd thinks capture. I think check."
-
-Then the board answers the question.
+> **лучше проектировать естественно взаимоисключающие исходы, чем полагаться на скрытые правила приоритета.**
 
 ---
 
-## 23. Mobile live-game screen
+## 22. Толпа и социальный слой
 
-PreChess is mobile-first.
+Все зрители одной партии должны видеть одни и те же канонические цены.
 
-The live screen should optimize for one-handed, repeated decisions.
+Полезные социальные сигналы:
 
-Recommended information hierarchy:
+- текущие цены исходов;
+- доля активных трейдеров по каждому исходу;
+- число трейдеров;
+- общий объём виртуальных очков;
+- недавнее движение цены;
+- позиция пользователя относительно толпы;
+- позже — сравнение с друзьями или подписками.
 
-### Top
-- players;
-- ratings;
-- clocks if available;
-- event/tournament;
-- current move;
-- live status.
+Пример:
 
-### Board
-Large enough to understand the position without leaving the market flow.
+> Шах — 38  
+> 62% трейдеров выбрали «Шах»
 
-### Persistent game probability
-Compact White / Draw / Black live signal.
+При этом нельзя смешивать:
+- цену доли;
+- число пользователей;
+- объём торгов.
 
-This is context, not the hero interaction.
+Это три разных сигнала.
 
-### Active prediction market
-The most urgent short market receives the strongest visual priority.
+Главный эмоциональный момент:
 
-Example:
+> «Толпа думает, что будет взятие. Я думаю, что будет шах».
 
-> **What happens first?**
-> Next 6 plies
+После этого ответ даёт сама доска.
+
+---
+
+## 23. Мобильный экран живой партии
+
+PreChess проектируется mobile-first.
+
+Live-экран должен быть рассчитан на быстрые повторяющиеся действия одной рукой.
+
+Рекомендуемая иерархия:
+
+### Верхняя часть
+- игроки;
+- рейтинги;
+- часы, если доступны;
+- турнир/событие;
+- номер текущего хода;
+- live-статус.
+
+### Доска
+
+Достаточно крупная, чтобы понимать позицию, не уходя из основного сценария.
+
+### Постоянная вероятность результата партии
+
+Компактный сигнал:
+- Белые
+- Ничья
+- Чёрные
+
+Это контекст, а не главный интерактивный элемент.
+
+### Главный активный рынок
+
+Самый срочный короткий рынок получает максимальный визуальный приоритет.
+
+Пример:
+
+> **Что произойдёт первым?**  
+> Следующие 6 полуходов
 >
-> Check 31
-> Capture 42
-> Castle 17
-> None 10
+> Шах 31  
+> Взятие 42  
+> Рокировка 17  
+> Ничего 10
 
-Tap outcome → trade sheet.
+Нажатие на исход открывает компактный экран/панель сделки.
 
-### Other live markets
-1–2 compact cards below.
+### Другие живые рынки
 
-### User position
-For markets where the user owns shares:
-- entry price;
-- current price;
-- unrealized P/L;
-- sell;
-- possible redemption.
+Ещё 1–2 более компактные карточки.
 
-The app should not make the user navigate through several screens just to place a prediction.
+### Позиция пользователя
+
+Для рынков, где у пользователя есть доли:
+- цена входа;
+- текущая цена;
+- нереализованный P/L;
+- кнопка продажи;
+- возможное погашение.
+
+Пользователь не должен проходить через несколько экранов ради одного прогноза.
 
 ---
 
-## 24. Market replacement rhythm
+## 24. Ритм замены рынков
 
-Resolved markets should be replaced quickly.
+Рассчитанные рынки должны быстро заменяться новыми.
 
-The user experience should feel like an uninterrupted stream:
+Ощущение от продукта:
 
 ```text
-predict
-→ watch
-→ resolve
-→ reaction
-→ next prediction
+прогноз
+→ наблюдение
+→ развязка
+→ реакция
+→ следующий прогноз
 ```
 
-A short celebratory result state may appear for roughly a moment, but it must not block the live board.
+Можно кратко показать красивое состояние результата, но оно не должно перекрывать живую доску надолго.
 
-The next market should already be available or appear immediately.
-
----
-
-## 25. Starting prices
-
-A new market needs an initial state before the crowd has traded.
-
-Possible approaches:
-
-### Equal prior
-For four outcomes: 25/25/25/25.
-
-Pros:
-- simple;
-- transparent;
-- no prediction model needed.
-
-Cons:
-- often unrealistic;
-- creates easy arbitrage-like opportunities in obvious positions.
-
-### Heuristic prior
-Rules initialize prices based on position features.
-
-Pros:
-- better than equal priors;
-- understandable.
-
-Cons:
-- manual tuning.
-
-### Model prior
-A model estimates event probabilities from historical positions / candidate lines.
-
-Pros:
-- potentially accurate;
-- better initial markets.
-
-Cons:
-- much harder;
-- calibration required.
-
-MVP recommendation:
-start with conservative heuristic or simple model-assisted priors, then let the market move prices. Do not delay the product waiting for perfect predictive probabilities.
-
-Initial price generation is separate from market selection.
+Следующий рынок должен быть готов заранее или появляться почти сразу.
 
 ---
 
-## 26. Market selection vs market pricing
+## 25. Начальные цены
 
-These are different systems.
+Новому рынку нужна стартовая цена ещё до того, как толпа успела поторговать.
 
-### Market selection asks:
-"What question is interesting now?"
+Есть несколько подходов.
 
-Inputs:
-- board state;
-- legal moves;
-- castling rights;
-- material;
-- recent moves;
-- engine signals;
-- template eligibility;
-- recent market history.
+### Равный prior
 
-### Market pricing asks:
-"What probability does each outcome currently have?"
+Для четырёх исходов: 25/25/25/25.
 
-Inputs may include:
-- initial prior;
-- AMM state;
-- crowd trades.
+Плюсы:
+- очень просто;
+- прозрачно;
+- не нужна модель.
 
-Do not conflate them.
+Минусы:
+- часто нереалистично;
+- в очевидных позициях создаёт слишком лёгкие возможности.
 
-Stockfish may help select a market without directly setting its price.
+### Эвристический prior
 
----
+Стартовые цены задаются правилами на основе признаков позиции.
 
-## 27. Virtual economy for MVP
+Плюсы:
+- реалистичнее равных цен;
+- можно объяснить.
 
-MVP uses virtual points only.
+Минусы:
+- требуется ручная настройка.
 
-Goals:
-- test whether users trade repeatedly;
-- test whether short market resolutions improve watch time;
-- measure whether users understand moving prices;
-- measure whether users return for another live game;
-- avoid mixing product validation with real-money regulatory complexity.
+### Модельный prior
 
-Users receive an initial balance.
+Модель оценивает вероятность событий по историческим позициям или кандидатным продолжениям.
 
-The system maintains an immutable ledger of:
-- grants;
-- buys;
-- sells;
-- settlements;
-- refunds;
-- adjustments if ever required.
+Плюсы:
+- потенциально точнее;
+- лучше стартовое состояние рынка.
 
-Balance changes are server-authoritative.
+Минусы:
+- существенно сложнее;
+- требуется калибровка.
 
-No client may directly modify balances, shares, prices, or resolutions.
+Рекомендация для MVP:
+
+начать с осторожных эвристик или простой модели стартовых вероятностей, а дальше позволить рынку быстро двигать цену. Не задерживать запуск продукта ради идеальной модели вероятностей.
+
+Генерация стартовой цены и выбор самого рынка — разные задачи.
 
 ---
 
-## 28. Core entities
+## 26. Выбор рынка и определение цены — разные системы
 
-The conceptual data model should eventually include at least:
+### Выбор рынка отвечает:
+
+> «Какой вопрос сейчас интересен?»
+
+Входные данные:
+- состояние доски;
+- легальные ходы;
+- права на рокировку;
+- материал;
+- последние ходы;
+- сигналы движка;
+- применимость шаблонов;
+- история недавно показанных рынков.
+
+### Определение цены отвечает:
+
+> «Какова текущая вероятность каждого исхода?»
+
+Входные данные могут включать:
+- стартовый prior;
+- состояние AMM;
+- сделки толпы.
+
+Нельзя смешивать эти две задачи.
+
+Stockfish может помогать выбирать подходящий рынок, не устанавливая его цену напрямую.
+
+---
+
+## 27. Виртуальная экономика MVP
+
+В MVP используются только виртуальные очки.
+
+Цели:
+- проверить, хотят ли пользователи торговать много раз за одну партию;
+- проверить, повышают ли быстрые развязки время просмотра;
+- проверить, понимают ли пользователи движение цен;
+- измерить, возвращаются ли они на следующие live-партии;
+- не смешивать проверку продукта с регуляторной сложностью реальных денег.
+
+Пользователь получает стартовый баланс.
+
+Система хранит неизменяемый ledger всех движений:
+- стартовые начисления;
+- покупки;
+- продажи;
+- расчёты;
+- возвраты;
+- служебные корректировки, если они когда-либо понадобятся.
+
+Баланс меняется только на сервере.
+
+Клиент не может напрямую менять баланс, доли, цены или исход рынка.
+
+---
+
+## 28. Основные сущности
+
+Концептуальная модель данных должна как минимум включать:
 
 ### Game
 - id
@@ -996,7 +1037,7 @@ The conceptual data model should eventually include at least:
 - unrealized P/L
 
 ### Ledger
-- immutable points movement history
+- неизменяемая история движения очков
 
 ### ChessEvent
 - game_id
@@ -1006,270 +1047,270 @@ The conceptual data model should eventually include at least:
 - derived event flags
 - source timestamp
 
-The actual database schema must be designed from this model; the deleted winner-only schema must not be reused blindly.
+Названия технических полей фиксируются на английском как часть кода/API. Пользовательская документация и интерфейс — на русском.
 
 ---
 
-## 29. System pipeline
+## 29. Системный пайплайн
 
-Target architecture:
+Целевая архитектура:
 
 ```text
-Live chess source
+Источник живых шахмат
       ↓
-Move ingestion
+Получение ходов
       ↓
-Canonical game state
+Каноническое состояние партии
       ↓
-Chess event detector
-      ├──────────────→ Resolver
+Детектор шахматных событий
+      ├──────────────→ Резолвер рынков
       ↓
-Market candidate generator
+Генератор кандидатов
       ↓
-Relevance scorer
+Оценка актуальности
       ↓
-Market scheduler
+Планировщик рынков
       ↓
-LMSR market service
+LMSR / сервис рынка
       ↕
-Mobile clients
+Мобильные клиенты
       ↓
-Trades / positions
+Сделки / позиции
       ↓
-Settlement + ledger
+Расчёт + ledger
 ```
 
-Optional engine/model inputs:
+Дополнительные сигналы:
 
 ```text
-Stockfish / move model / historical data
+Stockfish / модель человеческих ходов / исторические данные
       ↓
-market relevance + initial priors
+актуальность рынков + стартовые prior
 ```
 
 ---
 
-## 30. What AI/LLM may and may not do
+## 30. Что ИИ/LLM может и не может делать
 
-An LLM may help:
+LLM может помогать:
 
-- phrase a formal market naturally;
-- generate internal explanations;
-- suggest new template ideas for review;
-- classify UX copy.
+- красиво формулировать уже формальный рынок;
+- генерировать внутренние пояснения;
+- предлагать новые идеи шаблонов для ручной проверки;
+- помогать с текстом интерфейса.
 
-An LLM must not be authoritative for:
+LLM не может быть авторитетным источником для:
 
-- whether a chess event happened;
-- who won a market;
-- user balance;
-- market state;
-- trade execution.
+- определения факта шахматного события;
+- определения победившего исхода;
+- изменения баланса;
+- изменения состояния рынка;
+- исполнения сделки.
 
-Authoritative resolution comes from deterministic chess logic and canonical move data.
-
----
-
-## 31. Anti-cheat / information asymmetry
-
-Live prediction markets have a latency problem.
-
-A user may receive the real move from another source before PreChess receives or renders it.
-
-Therefore MVP design must assume information races exist.
-
-Mitigations to evaluate:
-- short lock before/around move processing;
-- source timestamping;
-- delay markets relative to broadcast;
-- reject trades after authoritative feed timestamp thresholds;
-- monitor abnormal consistently-late profitable trading;
-- use only virtual points during validation.
-
-This becomes critical before any real-value economy is considered.
+Авторитетный расчёт строится на детерминированной шахматной логике и канонических данных партии.
 
 ---
 
-## 32. What NOT to build first
+## 31. Задержка данных и информационное преимущество
 
-Do not expand into:
-- other sports or games;
-- user-authored free-text markets;
-- real money;
-- deposits/withdrawals;
-- KYC/AML flows;
-- complex social feeds;
-- dozens of simultaneous markets;
-- subjective chess events;
-- a giant AI market generator;
-- an order book;
-- custom user-created props.
+У live-рынка есть фундаментальная проблема задержки.
 
-First prove the live chess loop.
+Пользователь может узнать реальный ход из другого источника раньше, чем PreChess получит его или покажет в интерфейсе.
 
----
+Поэтому MVP должен изначально считать информационные гонки реальными.
 
-## 33. MVP market set
+Нужно проверить такие меры:
+- блокировка рынка вокруг момента получения нового хода;
+- временные метки источника;
+- намеренная задержка относительно внешней трансляции;
+- запрет сделок после определённого timestamp авторитетного источника;
+- анализ аномально стабильной прибыли на поздних сделках;
+- только виртуальные очки на этапе проверки продукта.
 
-A practical first set should be intentionally small.
-
-Suggested first families:
-
-1. GAME_RESULT
-2. EVENT_WITHIN(check)
-3. EVENT_WITHIN(capture)
-4. PLAYER_EVENT_WITHIN(castle)
-5. EVENT_BEFORE_MOVE(queen_trade)
-6. NEXT_ACTOR(capture)
-7. NEXT_OBJECT(captured_piece_type)
-8. FIRST_EVENT using a carefully mutually-exclusive outcome set
-
-This is enough to test the concept without pretending the template library is finished.
+До появления любой экономики с реальной ценностью эта проблема должна быть решена существенно строже.
 
 ---
 
-## 34. MVP success criteria
+## 32. Что не нужно строить первым
 
-The MVP is successful only if it validates behavior, not merely technical correctness.
+На старте не расширяем продукт в:
 
-Core measurements:
+- другие игры и виды спорта;
+- пользовательские свободные текстовые рынки;
+- реальные деньги;
+- пополнения и вывод средств;
+- KYC/AML-процессы;
+- сложную социальную ленту;
+- десятки одновременных рынков;
+- субъективные шахматные события;
+- огромный AI-генератор произвольных вопросов;
+- биржевой стакан;
+- пользовательские кастомные props.
 
-### Activation
-- user opens a live game;
-- understands a market;
-- executes first trade quickly.
-
-### Trading frequency
-- trades per viewer per game;
-- markets participated in per game;
-- repeat trades after first resolution.
-
-### Resolution engagement
-- percentage of traders still watching when their market resolves;
-- time between resolution and next trade.
-
-### Market quality
-- trade participation per offered market;
-- skipped-market rate;
-- distribution of prices at open and at resolve;
-- rate of markets resolving too trivially/too slowly;
-- void rate.
-
-### Retention
-- return for another live game;
-- return across days / tournaments.
-
-### Comprehension
-Users understand:
-- price = crowd probability signal;
-- share = claim on one outcome;
-- winning share = 100 points;
-- they can profit/loss from trading;
-- market has a specific horizon.
+Сначала нужно доказать основной live-цикл на шахматах.
 
 ---
 
-## 35. Product hypothesis to test
+## 33. Набор рынков для первого MVP
 
-Primary hypothesis:
+Начальный набор должен быть специально ограниченным.
 
-> Short, auto-resolving prediction markets make watching a chess game more engaging because spectators repeatedly commit to a concrete belief about what happens next.
+Предлагаемые семейства:
 
-Secondary hypothesis:
+1. `GAME_RESULT`
+2. `EVENT_WITHIN(check)`
+3. `EVENT_WITHIN(capture)`
+4. `PLAYER_EVENT_WITHIN(castle)`
+5. `EVENT_BEFORE_MOVE(queen_trade)`
+6. `NEXT_ACTOR(capture)`
+7. `NEXT_OBJECT(captured_piece_type)`
+8. `FIRST_EVENT` с тщательно спроектированными взаимоисключающими исходами
 
-> Crowd-generated prices are themselves entertaining information and create a social "me vs the market" layer.
-
-Third hypothesis:
-
-> Users care more about repeated short predictions than a single game-winner bet.
-
-The product should be instrumented to prove or disprove these separately.
-
----
-
-## 36. Design principles
-
-1. **Chess first.** Every market must come from the actual board state.
-2. **Prediction market, not sportsbook.** Prices emerge from trading.
-3. **Fast resolution.** The main loop resolves in a handful of moves.
-4. **Few markets.** Relevance beats catalogue size.
-5. **Objective contracts.** No subjective settlement.
-6. **Shared crowd.** Everyone sees the same canonical market.
-7. **Mobile speed.** A prediction should take seconds to place.
-8. **Server authority.** Clients never own truth.
-9. **Explainable rules.** Users can understand why a market resolved.
-10. **Template before AI.** Formal contracts first; intelligence helps choose them.
-11. **Virtual points first.** Validate engagement before monetization/regulation.
-12. **Every market must earn its screen space.**
+Этого достаточно, чтобы проверить идею, не делая вид, что библиотека шаблонов уже завершена.
 
 ---
 
-## 37. Canonical example session
+## 34. Критерии успеха MVP
 
-Magnus vs Hikaru is live.
+MVP должен доказать пользовательское поведение, а не только техническую работоспособность.
 
-The user opens PreChess.
+### Активация
+- пользователь открывает живую партию;
+- понимает смысл рынка;
+- быстро совершает первую сделку.
 
-The board shows move 11. White still has kingside castling rights.
+### Частота торговли
+- число сделок на одного зрителя за партию;
+- число рынков, в которых пользователь участвовал;
+- повторные сделки после первой развязки.
 
-Three markets are live:
+### Вовлечение в момент расчёта
+- доля трейдеров, которые всё ещё смотрят партию в момент расчёта своего рынка;
+- время между расчётом рынка и следующей сделкой.
 
-### Long
-> Who wins?
-> White 46 / Draw 24 / Black 30
+### Качество рынков
+- доля зрителей, участвующих в каждом предложенном рынке;
+- доля пропущенных рынков;
+- распределение цен при открытии и перед расчётом;
+- доля рынков, которые оказываются слишком очевидными или слишком долгими;
+- доля отменённых рынков.
 
-### Medium
-> Will White castle before move 15?
-> Yes 61 / No 39
+### Возврат
+- возвращается ли пользователь на следующую live-партию;
+- возвращается ли в другие дни или на другие турниры.
 
-### Short
-> What happens first in the next 6 plies?
-> Check 29 / Capture 44 / Castle 18 / None 9
-
-The user thinks a tactical check is coming and buys Check.
-
-Other spectators buy Capture.
-
-Check price moves from 29 to 35.
-
-The user now sees:
-- entry 31 average;
-- current 35;
-- position value;
-- unrealized P/L.
-
-Two moves later Hikaru captures a pawn.
-
-The short market locks and resolves to Capture.
-
-Check shares redeem at 0. Capture shares redeem at 100.
-
-The result flashes briefly.
-
-A new market immediately replaces it:
-
-> Who makes the next check?
-> White / Black / No check in next 8 plies
-
-The user forms the next hypothesis without leaving the game.
-
-That repeated rhythm is PreChess.
+### Понимание механики
+Пользователь должен понимать:
+- цена — это сигнал вероятности от толпы;
+- доля — это право на выплату по конкретному исходу;
+- выигравшая доля превращается в 100 очков;
+- позицию можно закрыть с прибылью или убытком;
+- у каждого рынка есть конкретный горизонт.
 
 ---
 
-## 38. Current product boundary
+## 35. Главные продуктовые гипотезы
 
-As of this document, PreChess is:
+Основная гипотеза:
 
-- mobile-first;
-- chess-only;
-- live;
-- prediction-market based;
-- virtual-points only for MVP;
-- driven by formal auto-resolving chess props;
-- crowd-priced through an AMM design, with LMSR the leading mechanism;
-- built around repeated short and medium predictions.
+> Короткие автоматически рассчитываемые рынки делают просмотр шахмат заметно интереснее, потому что зритель снова и снова формулирует конкретный прогноз о ближайшем будущем партии.
 
-Anything in older repository code or documentation that describes the product as a winner-only web betting prototype is obsolete.
+Вторая гипотеза:
 
-This document is the primary product definition until explicitly superseded by a newer version.
+> Цена, сформированная толпой, сама становится интересным контентом и создаёт слой «я против рынка».
+
+Третья гипотеза:
+
+> Повторяющиеся короткие прогнозы интересуют пользователя сильнее, чем одна ставка на победителя всей партии.
+
+Эти гипотезы нужно измерять отдельно.
+
+---
+
+## 36. Принципы дизайна продукта
+
+1. **Сначала шахматы.** Каждый рынок рождается из реальной позиции.
+2. **Рынок прогнозов, а не букмекер.** Цена формируется торговлей.
+3. **Быстрая развязка.** Главный цикл должен завершаться за несколько ходов.
+4. **Мало рынков.** Актуальность важнее количества.
+5. **Объективный контракт.** Никаких субъективных расчётов.
+6. **Единая толпа.** Все зрители видят один канонический рынок.
+7. **Мобильная скорость.** Прогноз должен делаться за секунды.
+8. **Сервер — источник истины.** Клиент ничего не решает сам.
+9. **Понятные правила.** Пользователь должен понимать, почему рынок рассчитался именно так.
+10. **Сначала шаблоны, потом ИИ.** Интеллект помогает выбирать рынки, но не заменяет контракт.
+11. **Сначала виртуальные очки.** Сначала проверяем вовлечение, потом думаем о монетизации.
+12. **Каждый рынок должен заслужить место на экране.**
+
+---
+
+## 37. Канонический пример сессии
+
+Идёт партия Магнус — Хикару.
+
+Пользователь открывает PreChess.
+
+На доске 11-й ход. У белых ещё есть право на короткую рокировку.
+
+Одновременно открыты три рынка.
+
+### Длинный
+
+> Кто победит?  
+> Белые 46 / Ничья 24 / Чёрные 30
+
+### Средний
+
+> Сделают ли белые рокировку до 15-го хода?  
+> Да 61 / Нет 39
+
+### Короткий
+
+> Что произойдёт первым в следующие 6 полуходов?  
+> Шах 29 / Взятие 44 / Рокировка 18 / Ничего 9
+
+Пользователь считает, что скоро будет тактический шах, и покупает «Шах».
+
+Другие зрители активнее покупают «Взятие».
+
+Цена «Шаха» двигается с 29 до 35.
+
+Пользователь видит:
+- среднюю цену входа 31;
+- текущую цену 35;
+- стоимость позиции;
+- нереализованный P/L.
+
+Через два хода Хикару берёт пешку.
+
+Короткий рынок блокируется и рассчитывается в пользу «Взятия».
+
+Доли «Шах» превращаются в 0. Доли «Взятие» — в 100.
+
+Результат кратко появляется на экране.
+
+Почти сразу открывается новый рынок:
+
+> Кто следующим объявит шах?  
+> Белые / Чёрные / Шаха не будет в следующие 8 полуходов
+
+Пользователь формирует новую гипотезу, не покидая экран партии.
+
+Именно этот повторяющийся ритм и есть PreChess.
+
+---
+
+## 38. Граница продукта на текущем этапе
+
+PreChess сейчас определяется так:
+
+- мобильное приложение;
+- только шахматы;
+- только live-партии;
+- основа — рынок прогнозов;
+- в MVP используются только виртуальные очки;
+- основная механика — формальные автоматически рассчитываемые шахматные props;
+- цены формирует толпа через AMM, главным кандидатом остаётся LMSR;
+- ядро вовлечения — повторяющиеся короткие и средние прогнозы.
+
+Этот документ является главным описанием продукта до тех пор, пока его явно не заменит новая версия.
