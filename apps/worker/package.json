@@ -1,5 +1,5 @@
 {
-  "name": "@prediction-chess/worker",
+  "name": "@prechess/worker",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,7 +11,7 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@prediction-chess/shared": "workspace:*",
+    "@prechess/shared": "workspace:*",
     "chess.js": "^1.0.0-beta.8"
   },
   "devDependencies": {
