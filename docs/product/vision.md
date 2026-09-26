@@ -1,13 +1,13 @@
-# Vision
+# Видение
 
-PreChess turns live chess viewing into a continuous prediction game.
+PreChess превращает просмотр живых шахмат в непрерывную игру прогнозов.
 
-Spectators watch the same real chess game and repeatedly trade outcome shares on what will happen next. Markets are short-lived, position-aware and automatically resolved from the chess move stream.
+Зрители смотрят одну и ту же реальную партию и снова и снова торгуют долями исходов на то, что произойдёт дальше. Рынки живут недолго, зависят от текущей позиции и автоматически рассчитываются по потоку ходов.
 
-The product is a prediction market, not a sportsbook: crowd trading moves prices and those prices become a live signal of collective belief.
+PreChess — это рынок прогнозов, а не букмекер: цены меняются из-за действий пользователей и становятся живым сигналом коллективного мнения.
 
-The core interaction is:
+Главный цикл:
 
-`position → prediction → trade → watch → automatic resolution → next prediction`
+`позиция → прогноз → сделка → наблюдение → автоматический расчёт → следующий прогноз`
 
-See `prediction-market.md` for the canonical product definition.
+Главное описание продукта находится в `prediction-market.md`.
