@@ -1,54 +1,85 @@
-# Decisions
+# Architecture Decisions
 
-Record architecture decisions here as the project grows.
+This file contains current architectural decisions only. The previous winner-only web MVP decision has been superseded by the PreChess live prediction-market concept.
 
 ---
 
-## ADR-001 — Модель данных и RPC-контракт (фаза 1)
+## ADR-001 — Mobile-first, chess-only product
 
-**Статус:** принято. **Дата:** 2026-06-23.
+**Status:** accepted  
+**Date:** 2026-09-26
 
-Server-authoritative модель: баланс и ставки меняются только на сервере
-(RPC `SECURITY DEFINER` + RLS), фронт не может писать баланс напрямую.
-Воркер пишет игровые данные сервис-ролью (минуя RLS).
+PreChess is a mobile-first application focused only on live chess.
 
-### Таблицы
+The old Vite winner-only web prototype is not the product architecture and has been removed.
 
-| Таблица | Назначение | Кто пишет |
-|---|---|---|
-| `profiles` | юзер + баланс очков (1:1 с `auth.users`) | триггер при регистрации, RPC |
-| `games` | шахматные партии (источник: Lichess) | worker (service role) |
-| `prob_ticks` | тики win-probability во времени | worker (service role) |
-| `markets` | рынок на партию (фаза 1: только `winner`) | worker (service role) |
-| `bets` | ставки пользователей | только RPC `place_bet` |
-| `ledger` | аудит всех движений баланса | триггер/RPC |
+---
 
-### Ценообразование (модель Polymarket, в синхроне с web)
-- Цена доли в центах: `price_cents = clamp(round(prob_side * 100), 1, 99)`.
-- Куплено долей: `shares = stake / price_cents`.
-- Выплата при выигрыше: `payout = round(shares * 100)` (доля гасится по 100 очков).
-- Маржи дома нет (биржевая модель).
+## ADR-002 — Formal market templates + deterministic resolvers
 
-### RPC-контракт
-- `place_bet(p_market_id uuid, p_side text, p_stake int) returns bets`
-  — `authenticated`. Атомарно: проверяет открытость рынка, берёт последний
-  `prob_tick`, считает цену/доли/выплату, проверяет и списывает баланс,
-  создаёт `bet` + запись в `ledger`. Бросает ошибку при закрытом рынке или
-  нехватке очков.
-- `resolve_market(p_market_id uuid, p_result text) returns void`
-  — `service_role`. Закрывает рынок и партию, начисляет выплаты победившим,
-  фиксирует `pnl`. `p_result = 'draw'` → возврат ставок (refund).
+**Status:** accepted  
+**Date:** 2026-09-26
 
-### RLS (кратко)
-- `profiles`, `games`, `markets`, `prob_ticks` — публичное чтение; запись только
-  сервером (триггер/сервис-роль). Прямой `update` баланса клиентом запрещён.
-- `bets`, `ledger` — пользователь видит только свои строки; запись только через RPC.
+Markets are instantiated from a versioned library of formal templates. Free-text user-authored markets are not part of the MVP.
 
-### Realtime
-Включены в публикацию `supabase_realtime`: `prob_ticks`, `markets`, `bets`
-(для живой линии и обновления позиций на фронте — шаг 4 роадмапа).
+Every template must define:
+- eligibility;
+- outcomes;
+- horizon;
+- locking rule;
+- deterministic resolver;
+- void/refund behavior;
+- edge cases.
 
-### Открытые вопросы / на потом
-- Шаблонные пропы и parimutuel — фаза 2 (см. `mvp 2.0/decision.md`).
-- Кэш-аут позиции до резолва (сейчас в моках есть mark-to-market, в БД — нет).
-- Anti-cheat / лимиты на ставки — не в фазе 1.
+LLMs may phrase markets but may not determine settlement.
+
+---
+
+## ADR-003 — Market Generator selects; it does not invent arbitrary contracts
+
+**Status:** accepted  
+**Date:** 2026-09-26
+
+The generator evaluates the current board and chooses relevant instances from validated templates.
+
+Stockfish may provide relevance features but is not an authoritative human-move probability model.
+
+---
+
+## ADR-004 — AMM-first market mechanism
+
+**Status:** proposed / leading choice  
+**Date:** 2026-09-26
+
+Short-lived markets need guaranteed liquidity, so an automated market maker is preferred over an order book.
+
+LMSR is the leading mechanism because it provides continuous prices, bounded market-maker loss and controllable liquidity. It must be simulated before the database/trading contract is frozen.
+
+---
+
+## ADR-005 — Server-authoritative timing, trading and settlement
+
+**Status:** accepted  
+**Date:** 2026-09-26
+
+The backend owns:
+- canonical move order;
+- market open/lock/resolve state;
+- AMM state;
+- trades;
+- positions;
+- balances;
+- settlement.
+
+Client clocks and client-reported chess events are never authoritative.
+
+---
+
+## ADR-006 — Old database schema intentionally removed
+
+**Status:** accepted  
+**Date:** 2026-09-26
+
+The previous schema modeled only White/Black winner bets and a one-way `place_bet` flow. Reusing it would lock the new product into the wrong domain model.
+
+A new schema will be designed around games, chess events, template versions, multi-outcome markets, AMM state, trades, positions and an immutable ledger after market mechanics are validated.
