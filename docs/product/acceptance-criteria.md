@@ -1,20 +1,20 @@
-# Acceptance Criteria
+# Критерии готовности MVP
 
-The first meaningful MVP is ready to test when:
+Первый полноценный MVP готов к пользовательскому тесту, когда выполняются все условия:
 
-1. A user can open a live chess game on mobile and see the current board state.
-2. The same active markets and prices are visible to all viewers of that game.
-3. The system can instantiate applicable markets from formal templates.
-4. At least one short market resolves within a small number of plies.
-5. A user can buy outcome shares with virtual points.
-6. Market prices move as users trade through the AMM.
-7. A user position shows shares, entry price and current value.
-8. The backend locks markets against late-information trades.
-9. A deterministic resolver can reproduce the result from stored moves.
-10. Winning shares settle to 100 points and losing shares to 0; void markets refund according to contract.
-11. Balance, trades, positions and settlements are server-authoritative and auditable.
-12. A resolved short market is quickly replaced by a new relevant market.
-13. The product records activation, trades per game, market participation, resolution engagement, void rate and return behavior.
-14. No winner-only mock logic is required for the product loop to function.
+1. Пользователь может открыть live-партию на мобильном устройстве и увидеть актуальную позицию.
+2. Все зрители одной партии видят одинаковые активные рынки и канонические цены.
+3. Система умеет создавать применимые рынки из формальных шаблонов.
+4. Хотя бы один короткий рынок рассчитывается в течение небольшого числа полуходов.
+5. Пользователь может покупать доли исходов за виртуальные очки.
+6. Пользователь может закрывать позицию до расчёта рынка.
+7. Сделки двигают цены через AMM.
+8. Открытая позиция показывает количество долей, цену входа, текущую цену и P/L.
+9. Backend блокирует торговлю так, чтобы пользователь не мог торговать на уже полученном сервером ходе.
+10. Детерминированный резолвер способен воспроизвести результат рынка по сохранённой последовательности ходов.
+11. Выигравшая доля погашается по 100 очков, проигравшая — по 0; отменённый рынок обрабатывается по заранее определённому правилу возврата.
+12. Баланс, сделки, позиции, состояние рынка и расчёт являются серверно-авторитетными и аудируемыми.
+13. После расчёта короткий рынок быстро заменяется новым актуальным рынком.
+14. Продукт собирает метрики активации, числа сделок за партию, участия в рынках, удержания до момента расчёта, доли отменённых рынков и возврата пользователей.
 
-Product behavior and market semantics are defined in `prediction-market.md`.
+Поведение продукта и семантика рынков определены в `prediction-market.md`.
